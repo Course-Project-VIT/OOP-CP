@@ -22,7 +22,13 @@
   - Configured shared singleton `Bank` and `TransactionHistory` with demo seed data: `src/com/bank/atm/config/BankConfig.java`.
   - Preserved original console application and verification command.
   - Verified compilation via both Maven wrapper and javac.
-- [ ] **Phase 2: Backend API Development**
+- [x] **Phase 2: Backend API Development**
+  - Implemented DTOs for requests (`CardCheckRequest`, `LoginRequest`, `ChangePinRequest`, `DepositRequest`, `WithdrawRequest`, `TransferRequest`) and responses (`ApiResponse<T>`, `CardStatusResponse`, `AccountDetailsResponse`, `BalanceResponse`, `TransactionItemResponse`, `AuthSessionResponse`).
+  - Implemented `AtmWebService` with thread-safe account operations and HTTP session authentication.
+  - Implemented REST controllers: `AuthController`, `AccountController`, `TransactionController`.
+  - Configured CORS for frontend integration: `WebMvcConfig`.
+  - Implemented `@RestControllerAdvice GlobalExceptionHandler`.
+  - Created JUnit 5 unit and integration tests (17 tests passing with 0 failures).
 - [ ] **Phase 3: Frontend Foundation**
 - [ ] **Phase 4: Frontend Design & Development**
 - [ ] **Phase 5: Backend & Frontend Integration**
@@ -32,7 +38,8 @@
 ---
 
 ## Recent Commits on `feature/atm-web-application`
-*(To be populated after Phase 1 commit)*
+- `9443419` - `feat: initialize Spring Boot backend` (Phase 1)
+
 
 ---
 
