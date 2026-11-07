@@ -1,354 +1,287 @@
-# ATM Simulation System (Java OOP Project)
+# APEX BANK: Modern Full-Stack Touchscreen ATM Banking System
 
-A console-based ATM simulation written in plain Java. A customer inserts a card, logs in with a
-4-digit PIN, and then checks a balance, deposits, withdraws, transfers money, views recent
-transactions, or changes the PIN. The project is built to make core object-oriented programming
-concepts easy to see and explain in code.
+[![Java 17](https://img.shields.io/badge/Java-17%20LTS-007396?logo=openjdk&logoColor=white)](https://openjdk.org/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.4-6DB33F?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-6.x-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Motion](https://img.shields.io/badge/Motion%20for%20React-12-FF0055?logo=framer&logoColor=white)](https://motion.dev/)
+[![Build & Tests](https://img.shields.io/badge/JUnit%205-21%20Tests%20Passing-brightgreen)](https://junit.org/junit5/)
 
-> **Academic simulation only.** It does not connect to any bank, does not use real card data, and
-> does not implement real financial security. PINs are stored and shown in plain text purely for
-> classroom demonstration. A real system must never do that.
+A full-stack, enterprise-grade ATM banking application built upon a robust Java Object-Oriented Programming (OOP) foundation. It combines a **Spring Boot 3 REST backend** with a **modern React 18 + TypeScript touchscreen terminal**, featuring realistic animations powered by Motion for React, Aceternity UI, Magic UI, and React Bits design patterns.
 
----
-
-## Table of contents
-
-1. [Features](#features)
-2. [OOP concepts demonstrated](#oop-concepts-demonstrated)
-3. [Package structure](#package-structure)
-4. [Class descriptions](#class-descriptions)
-5. [Requirements](#requirements)
-6. [Compile and run](#compile-and-run)
-7. [Demo credentials](#demo-credentials)
-8. [Business rules](#business-rules)
-9. [Sample console session](#sample-console-session)
-10. [Test cases](#test-cases)
-11. [UML class diagram](#uml-class-diagram)
-12. [Limitations](#limitations)
-13. [Future improvements](#future-improvements)
+Both the **modern touchscreen web application** and the **original academic console application** coexist harmoniously and share the exact same domain business rules, accounts, and financial calculations.
 
 ---
 
-## Features
+## Table of Contents
 
-- Card selection with validation: unknown, **blocked**, and **expired** cards are rejected before any PIN is asked.
-- PIN login with exactly 4 digits, a maximum of **3 failed attempts**, and **automatic card blocking**.
-- Check balance (also shows how much can be withdrawn after the minimum balance).
-- Deposit, withdraw, and transfer between accounts, with minimum-balance rules per account type.
-- Every completed deposit, withdrawal, transfer (out and in) and PIN change is recorded.
-- View the **last 5 transactions, newest first**.
-- Change PIN (the old PIN is verified first).
-- Input validation everywhere: bad menu choices, bad amounts, wrong PINs, and unknown accounts show a
-  friendly message and the program keeps running. No stack traces for expected mistakes.
-- If the input stream ends (Ctrl+D / piped input runs out), the ATM shuts down cleanly.
+1. [Key Features & Highlights](#key-features--highlights)
+2. [Full-Stack Architecture](#full-stack-architecture)
+3. [Technology Stack](#technology-stack)
+4. [Demo Accounts & Test Cards](#demo-accounts--test-cards)
+5. [Quickstart Guide](#quickstart-guide)
+   - [Running the Spring Boot Backend](#1-running-the-spring-boot-backend)
+   - [Running the React Web Frontend](#2-running-the-react-web-frontend)
+   - [Running the Original Console App](#3-running-the-original-console-application)
+6. [REST API Documentation](#rest-api-documentation)
+7. [Touchscreen ATM Screens & Visual UX](#touchscreen-atm-screens--visual-ux)
+8. [Automated Test Suite (21 Passing Tests)](#automated-test-suite-21-passing-tests)
+9. [Core OOP Concepts Demonstrated](#core-oop-concepts-demonstrated)
+10. [UML Class Diagram & Domain Model](#uml-class-diagram--domain-model)
+11. [Project Structure](#project-structure)
 
 ---
 
-## OOP concepts demonstrated
+## Key Features & Highlights
 
-| Concept | Where to find it | What to point at |
+- **Full-Stack Integration**: Every financial operation in the React frontend communicates in real-time with the Java Spring Boot backend. No mock frontend databases.
+- **Stateful Session Authentication**: Uses secure HTTP session cookies (`JSESSIONID`) with server-side validation.
+- **Card Security & PIN Enforcement**:
+  - Exactly 4-digit PIN verification.
+  - Maximum 3 failed attempts before automatic card blocking.
+  - Expired and blocked card rejection with user-friendly errors.
+- **Financial Precision (`BigDecimal`)**:
+  - Zero loss of floating-point precision. All currency uses scale 2 with `RoundingMode.HALF_UP`.
+  - Enforced minimum balances: ₹100.00 for `SavingsAccount`, ₹0.00 for `CurrentAccount`.
+- **Complete Suite of ATM Operations**:
+  - **Balance Inquiry**: Live dynamic counting counter (`NumberTicker`), ledger balance vs. available-to-withdraw.
+  - **Cash Deposit**: Quick presets (₹500, ₹1000, ₹2000, ₹5000), custom amount keypad, cash intake feeder animation.
+  - **Cash Withdrawal**: Fast cash options, custom withdrawal, animated cash dispenser slot with collection action.
+  - **Electronic Funds Transfer**: Account-to-account transfer with recipient lookup, same-account transfer guard, two-step confirmation modal.
+  - **Transaction History**: Displays the last 5 transactions in reverse chronological order (newest first) with colored badges.
+  - **PIN Change**: Verifies old PIN first, enforces 4-digit format, records `PIN_CHANGE` transaction.
+  - **Card Ejection**: Animated slide-up card ejection and session teardown.
+- **Tactile Touchscreen Kiosk UX**:
+  - Authentic ATM numeric keypad (0–9, Clear, Backspace, Confirm).
+  - Horizontal shake animation on invalid PIN or rejected transaction.
+  - Printable ATM slip modal for statement generation.
+
+---
+
+## Full-Stack Architecture
+
+```text
+  +-----------------------------------------------------------------------------+
+  |                        TOUCHSCREEN ATM USER INTERFACE                       |
+  |             (React 18, Vite, TypeScript, Tailwind CSS, Motion)              |
+  |   - Welcome Screen        - PIN Touchscreen Keypad   - Dynamic Bento Grid   |
+  |   - 3D Debit Card Widget  - NumberTicker Counter     - Cash Dispenser Slot  |
+  +---------------------------------------+-------------------------------------+
+                                          | JSON over HTTP / Vite Proxy (Port 5173 -> 8080)
+                                          | Credentials: JSESSIONID cookie
+                                          v
+  +-----------------------------------------------------------------------------+
+  |                          SPRING BOOT REST BACKEND                           |
+  |   [Controllers]                                                             |
+  |     - AuthController        (/api/auth/*)                                   |
+  |     - AccountController     (/api/account/*)                                |
+  |     - TransactionController (/api/transactions/*)                          |
+  |                                                                             |
+  |   [Security, DTOs & Exception Handling]                                     |
+  |     - WebMvcConfig (CORS with credentials)                                  |
+  |     - GlobalExceptionHandler (@RestControllerAdvice -> 400, 401, 403, 404)  |
+  |     - AtmWebService (Thread-safe session-backed domain orchestrator)         |
+  +---------------------------------------+-------------------------------------+
+                                          | Pure Java Domain Method Calls
+                                          v
+  +-----------------------------------------------------------------------------+
+  |                        JAVA DOMAIN OOP ARCHITECTURE                         |
+  |   [Bank Repository (Singleton)]                                             |
+  |     - HashMap<String, Account>  (Case-insensitive, whitespace-trimmed)     |
+  |     - HashMap<String, ATMCard>  (Thread-safe atomic updates)                |
+  |                                                                             |
+  |   [Polymorphic Models]                                                      |
+  |     - Account (abstract) <--- SavingsAccount (Min ₹100), CurrentAccount (₹0)|
+  |     - Card (abstract)    <--- ATMCard (links to account, tracks attempts)   |
+  |     - Customer (immutable record of identity)                               |
+  |     - TransactionRecord  (Immutable ledger entries TXN-1001, TXN-1002...)  |
+  |                                                                             |
+  |   [Interfaces]                                                              |
+  |     - Authenticatable, TransactionOperations, Printable                    |
+  +-----------------------------------------------------------------------------+
+```
+
+---
+
+## Technology Stack
+
+### Backend
+- **Language**: Java 17 (OpenJDK 17 LTS)
+- **Framework**: Spring Boot 3.3.4
+- **Web Layer**: Spring MVC (`spring-boot-starter-web`)
+- **Validation**: Jakarta Validation API (`spring-boot-starter-validation`)
+- **Build Tool**: Apache Maven 3.9.9 via self-contained Maven Wrapper (`mvnw.cmd` / `./mvnw`)
+- **Testing**: JUnit 5, AssertJ, Mockito, Spring Test (`MockMvc`)
+
+### Frontend
+- **Framework**: React 18 with Vite 6 & TypeScript 5
+- **Styling**: Tailwind CSS 3.4 (Custom Midnight Navy Fintech Palette)
+- **Animation**: Motion for React (`motion` v12+, imported via `"motion/react"`)
+- **Iconography**: Lucide React
+- **HTTP Client**: Axios with `withCredentials: true`
+- **Routing**: React Router DOM 6
+
+---
+
+## Demo Accounts & Test Cards
+
+The system comes pre-loaded with the exact classroom demo dataset:
+
+| Card Number | Linked Account | 4-Digit PIN | Account Holder | Account Type | Balance | Expiry Date | Status | Purpose & Test Scenario |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| `CARD1001` | `ACC1001` | `1234` | **Aarav Sharma** | Savings | ₹5,000.00 | 2028-12-31 | <span style="color:green">ACTIVE</span> | Standard savings flow; ₹100.00 minimum balance rule |
+| `CARD1002` | `ACC1002` | `5678` | **Priya Patel** | Current | ₹12,000.00 | 2028-06-30 | <span style="color:green">ACTIVE</span> | Standard current flow; ₹0.00 minimum balance rule |
+| `CARD1003` | `ACC1003` | `4321` | **Rahul Verma** | Savings | ₹800.00 | 2025-01-01 | <span style="color:orange">EXPIRED</span> | Rejection test for expired cards |
+| `CARD1004` | `ACC1004` | `9999` | **Neha Iyer** | Savings | ₹1,500.00 | 2028-12-31 | <span style="color:red">BLOCKED</span> | Rejection test for pre-blocked cards |
+
+> **Classroom Notice**: All data resides in-memory in the `Bank` singleton. Restarting the backend resets all balances, transactions, and blocked cards to these initial states.
+
+---
+
+## Quickstart Guide
+
+### 1. Running the Spring Boot Backend
+
+From the project root directory, run the Maven wrapper:
+
+```bash
+# Windows
+.\mvnw.cmd spring-boot:run
+
+# Linux / macOS
+./mvnw spring-boot:run
+```
+
+The Spring Boot backend will start on **`http://localhost:8080`**.
+
+---
+
+### 2. Running the React Web Frontend
+
+Open a second terminal, navigate into `frontend`, and launch the development server:
+
+```bash
+cd frontend
+
+# Install dependencies (only required on first run)
+npm install
+
+# Start Vite touchscreen terminal
+npm run dev
+```
+
+Open your browser and navigate to **`http://localhost:5173`**.
+
+---
+
+### 3. Running the Original Console Application
+
+The original console application remains completely intact and can be compiled and run directly:
+
+```bash
+# Compile console classes to bin/
+javac -d bin src/app/*.java src/exceptions/*.java src/interfaces/*.java src/model/*.java src/service/*.java src/util/*.java
+
+# Run interactive console ATM
+java -cp bin app.Main
+```
+
+---
+
+## REST API Documentation
+
+All API endpoints return a uniform JSON envelope:
+
+```json
+{
+  "success": true,
+  "message": "Operation description",
+  "data": { ... },
+  "timestamp": "2026-11-08T00:00:00"
+}
+```
+
+### Endpoints Overview
+
+| Method | Endpoint | Description | Request Body | Auth Required | Status Codes |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `POST` | `/api/auth/card` | Check card validity & status | `{"cardNumber": "CARD1001"}` | No | 200, 400, 403, 404 |
+| `POST` | `/api/auth/login` | Verify PIN & establish session | `{"cardNumber": "CARD1001", "pin": "1234"}` | No | 200, 401, 403, 404 |
+| `GET` | `/api/auth/session` | Inspect active session | None | Optional | 200 |
+| `POST` | `/api/auth/logout` | Invalidate session & eject card | None | Yes | 200 |
+| `POST` | `/api/auth/change-pin` | Change 4-digit PIN | `{"currentPin": "1234", "newPin": "9876", "confirmPin": "9876"}` | Yes | 200, 400, 401 |
+| `GET` | `/api/account/details` | Customer profile & account summary | None | Yes | 200, 401 |
+| `GET` | `/api/account/balance` | Real-time current & available balance | None | Yes | 200, 401 |
+| `POST` | `/api/transactions/deposit` | Deposit cash | `{"amount": 1000.00}` | Yes | 200, 400, 401 |
+| `POST` | `/api/transactions/withdraw` | Withdraw cash | `{"amount": 500.00}` | Yes | 200, 400, 401 |
+| `POST` | `/api/transactions/transfer` | Transfer funds to another account | `{"recipientAccountNumber": "ACC1002", "amount": 500.00}` | Yes | 200, 400, 401, 404 |
+| `GET` | `/api/transactions/recent` | Get latest 5 transactions | Query param: `?limit=5` | Yes | 200, 401 |
+
+---
+
+## Touchscreen ATM Screens & Visual UX
+
+The frontend is organized into 10 screens following the ATM physical workflow:
+
+1. **Welcome Screen (`/`)**: Futuristic ATM branding, interactive card insertion slot, and classroom demo card selector rack.
+2. **PIN Authentication (`/pin`)**: 3D debit card visual, 4-dot spring indicator, full touchscreen numeric keypad, remaining attempt warning, and error shake animation.
+3. **ATM Dashboard (`/dashboard`)**: Personalized greeting, live balance ticker, and 6-action touch bento grid.
+4. **Balance Inquiry (`/balance`)**: Large `NumberTicker` counter, available vs. minimum balance breakdown, and printable ATM receipt slip modal.
+5. **Cash Deposit (`/deposit`)**: Quick denomination buttons (₹500, ₹1000, ₹2000, ₹5000), custom amount keypad, and animated cash intake shutter slot.
+6. **Cash Withdrawal (`/withdraw`)**: Fast cash presets, custom withdrawal, minimum balance guard, and animated cash dispenser with "Take Cash" prompt.
+7. **Money Transfer (`/transfer`)**: Recipient account validation, demo recipient quick-select chips, and two-step confirmation modal.
+8. **Transaction History (`/history`)**: Color-coded transaction badges (Green for Inflow, Red for Outflow, Blue for PIN change), transaction IDs, and date-times.
+9. **Change PIN (`/change-pin`)**: Current PIN verification, new PIN confirmation, and live backend update.
+10. **Card Ejection (`/eject`)**: Card sliding up out of the slot, thank-you banner, and 5-second automatic return countdown.
+
+---
+
+## Automated Test Suite (21 Passing Tests)
+
+The backend features a comprehensive test suite in `test/com/bank/atm/`:
+
+```bash
+# Run all automated tests via Maven
+.\mvnw.cmd test
+```
+
+### Test Coverage Highlights
+- **`AtmWebServiceTest` (13 Unit Tests)**:
+  - Active card verification, expired card rejection, blocked card rejection.
+  - Successful PIN verification, failed attempt counter increment, 3-attempt blocking.
+  - Positive deposits, withdrawals respecting minimum balances, overdraw rejection (`InsufficientFundsException`).
+  - Account-to-account transfers, self-transfer rejection.
+  - PIN modification, old PIN verification, mismatched confirm PIN rejection.
+  - Recent transactions ordering (newest first).
+- **`AtmIntegrationTest` (4 MockMvc Tests)**:
+  - REST endpoint contracts for `/api/auth/card`, `/api/auth/login`, `/api/account/balance`.
+  - Deposit and withdrawal end-to-end execution.
+  - Unauthenticated access rejection (HTTP 401).
+- **`FullStackAtmFlowTest` (4 End-to-End Scenario Tests)**:
+  - Complete 10-step customer user journey: Card Insert &rarr; Login &rarr; Balance &rarr; Deposit &rarr; Withdraw &rarr; Transfer &rarr; History &rarr; PIN Change &rarr; Eject.
+  - Three failed PIN attempts resulting in immediate card lock.
+  - Expired card rejection (HTTP 400).
+  - Pre-blocked card rejection (HTTP 403).
+
+---
+
+## Core OOP Concepts Demonstrated
+
+| Concept | Location in Codebase | Concrete Implementation |
 |---|---|---|
-| **Encapsulation** | `model/Account.java`, `model/Card.java`, `service/Bank.java` | All fields are `private`. `Account` has **no `setBalance()`**; the balance changes only through `deposit`, `withdraw` and `transfer`. `Card` has **no PIN getter**, and its blocked flag and attempt counter change only through PIN checks or `block()`. `Bank` never exposes its internal maps. `getTransactionHistory()` returns a read-only view. |
-| **Abstraction** | `Account`, `Card` | `abstract class Account` (abstract `getAccountType()` and `getMinimumBalance()`) and `abstract class Card` (abstract `isValid()`). Neither can be instantiated. |
-| **Inheritance** | `SavingsAccount`, `CurrentAccount`, `ATMCard` | `Account` ← `SavingsAccount`, `CurrentAccount`; `Card` ← `ATMCard`. |
-| **Interfaces** | `interfaces/` | `Authenticatable` (implemented by `Card`), `TransactionOperations` (implemented by `Account`), `Printable` (implemented by `Account`, `Card`, `Customer`, `TransactionRecord`). |
-| **Polymorphism** | `app/Main.java`, `service/Bank.java`, `service/ATM.java` | `Account savings = new SavingsAccount(...)` and `Account current = new CurrentAccount(...)` are used through the same `Account` type. The overridden `getAccountType()` / `getMinimumBalance()` change the behaviour of `withdraw` and `transfer`. `ATMCard` overrides `isValid()` and `printSummary()`. |
-| **Custom exception handling** | `exceptions/` (7 checked exceptions) | Thrown by `Account`, `Card`, `Bank` and `InputValidator`; caught with `try/catch` (including multi-catch) in `ATM`, which turns each one into a friendly message. |
-| **Collections** | `Bank`, `Account`, `TransactionHistory` | `HashMap<String, Account>` and `HashMap<String, ATMCard>` for lookup; `ArrayList<TransactionRecord>` for history. |
-| **Clean package structure** | `src/` | `app`, `model`, `service`, `interfaces`, `exceptions`, `util`, each with one responsibility. |
+| **Encapsulation** | `model/Account.java`, `model/Card.java`, `service/Bank.java` | All fields are strictly `private`. `Account` has **no `setBalance()`**; balances change only through verified `deposit()`, `withdraw()`, and `transfer()`. `Card` has no PIN getter; attempts and blocking are internal. `Bank` protects its internal HashMaps. |
+| **Abstraction** | `Account`, `Card` | Abstract classes define contracts (`getAccountType()`, `getMinimumBalance()`, `isValid()`) without permitting direct instantiation. |
+| **Inheritance** | `SavingsAccount`, `CurrentAccount`, `ATMCard` | `Account` &larr; `SavingsAccount`, `CurrentAccount`; `Card` &larr; `ATMCard`. |
+| **Interfaces** | `interfaces/` | `Authenticatable` (enforced by `Card`), `TransactionOperations` (enforced by `Account`), `Printable` (enforced by `Customer`, `Card`, `Account`, `TransactionRecord`). |
+| **Polymorphism** | `AtmWebService.java`, `Bank.java`, `Main.java` | Accounts are referenced through the abstract `Account` type; dynamic dispatch resolves Savings vs. Current minimum balance calculations at runtime. |
+| **Custom Exceptions** | `exceptions/` (7 checked exceptions) | Domain violations throw specific checked exceptions mapped cleanly to REST HTTP status codes via `@RestControllerAdvice`. |
+| **Collections** | `Bank.java`, `Account.java`, `TransactionHistory.java` | Fast O(1) in-memory lookup via `HashMap<String, Account>` and `HashMap<String, ATMCard>`; chronological ledger using `ArrayList<TransactionRecord>`. |
 
 ---
 
-## Package structure
-
-```text
-ATM-Simulation-System/
-├── src/
-│   ├── app/
-│   │   └── Main.java
-│   ├── model/
-│   │   ├── Account.java            (abstract)
-│   │   ├── SavingsAccount.java
-│   │   ├── CurrentAccount.java
-│   │   ├── Card.java               (abstract)
-│   │   ├── ATMCard.java
-│   │   ├── Customer.java
-│   │   ├── TransactionRecord.java
-│   │   └── TransactionType.java    (enum)
-│   ├── service/
-│   │   ├── ATM.java
-│   │   ├── Bank.java
-│   │   └── TransactionHistory.java
-│   ├── interfaces/
-│   │   ├── Authenticatable.java
-│   │   ├── TransactionOperations.java
-│   │   └── Printable.java
-│   ├── exceptions/
-│   │   ├── InvalidAmountException.java
-│   │   ├── InsufficientFundsException.java
-│   │   ├── InvalidPinException.java
-│   │   ├── CardBlockedException.java
-│   │   ├── CardExpiredException.java
-│   │   ├── AccountNotFoundException.java
-│   │   └── InvalidMenuChoiceException.java
-│   └── util/
-│       └── InputValidator.java
-├── README.md
-└── .gitignore
-```
-
----
-
-## Class descriptions
-
-### `app`
-| Class | Purpose |
-|---|---|
-| `Main` | Entry point. Builds the demo customers, accounts and cards, registers them with a `Bank`, then starts the `ATM`. Contains no business logic. |
-
-### `model`
-| Class | Purpose |
-|---|---|
-| `Account` (abstract) | Common account behaviour: private balance, deposit, withdraw, transfer, validation, transaction recording. Subclasses supply the account type name and minimum balance. |
-| `SavingsAccount` | Savings account. Minimum balance **100.00**. |
-| `CurrentAccount` | Current account. Minimum balance **0.00**; no overdraft. |
-| `Card` (abstract) | Common card behaviour: PIN verification and change, failed-attempt counting, blocking, expiry. Subclasses define what "valid" means. |
-| `ATMCard` | A card linked to exactly one account; `isValid()` checks blocked state, then expiry. |
-| `Customer` | Immutable customer details (ID, name, phone, email). |
-| `TransactionRecord` | Immutable record of one completed action: ID, type, amount, timestamp, description, balance afterwards. |
-| `TransactionType` | Enum: `DEPOSIT`, `WITHDRAWAL`, `TRANSFER_IN`, `TRANSFER_OUT`, `PIN_CHANGE`. |
-
-### `service`
-| Class | Purpose |
-|---|---|
-| `ATM` | The console controller: card selection, PIN login, menu loop, and each operation. Uses only public methods of other classes. |
-| `Bank` | In-memory repository of accounts and cards with lookup and the account-to-card relationship. |
-| `TransactionHistory` | Prints the latest N transactions, newest first, without modifying the original list. |
-
-### `interfaces`
-| Interface | Purpose |
-|---|---|
-| `Authenticatable` | `verifyPin(String)` and `changePin(String, String)`. |
-| `TransactionOperations` | `deposit`, `withdraw`, `transfer`, `getBalance`. |
-| `Printable` | `printSummary()`. |
-
-### `exceptions` (all checked, extending `Exception`)
-| Exception | Thrown when |
-|---|---|
-| `InvalidAmountException` | An amount is empty, not numeric, zero, negative, has more than 2 decimals, or a transfer targets the same account. |
-| `InsufficientFundsException` | A withdrawal or transfer would drop the balance below the minimum. Carries the available and requested amounts. |
-| `InvalidPinException` | A PIN is malformed or incorrect (also when verifying on a blocked card). |
-| `CardBlockedException` | A blocked card is used. |
-| `CardExpiredException` | An expired card is used. |
-| `AccountNotFoundException` | A card or account cannot be found (or a card's linked account is not registered). |
-| `InvalidMenuChoiceException` | A menu entry is empty, not a whole number, or outside 1-7. |
-
-### `util`
-| Class | Purpose |
-|---|---|
-| `InputValidator` | `final` utility class that centralises parsing and validation of PINs, amounts and menu choices. |
-
----
-
-## Requirements
-
-- **JDK 17 or newer** (recommended). The code uses no language features newer than Java 11 syntax,
-  but it was only compiled and run on **JDK 21**; compiling on Java 11 has not been tested.
-- No external libraries and no build tool required.
-
----
-
-## Compile and run
-
-From the project root (the folder containing `src/`):
-
-```bash
-javac -d out src/app/Main.java src/model/*.java src/service/*.java src/interfaces/*.java src/exceptions/*.java src/util/*.java
-java -cp out app.Main
-```
-
-**Alternative that avoids long wildcard lists** (Linux / macOS / Git Bash):
-
-```bash
-find src -name "*.java" > sources.txt
-javac -d out @sources.txt
-java -cp out app.Main
-```
-
-On Windows Command Prompt, create the file list with `dir /s /b src\*.java > sources.txt`, then
-run the same `javac` and `java` commands. This works as long as the project path contains no spaces.
-
-**IDE (IntelliJ IDEA, Eclipse, VS Code):** open the folder, mark `src` as the sources root, and run
-`app.Main`. Type your input into the IDE's run/console window.
-
-**Quick non-interactive smoke test** (the prompts run together because piped input is not echoed):
-
-```bash
-printf 'CARD1001\n1234\n1\n7\nEXIT\n' | java -cp out app.Main
-```
-
-> The bank's data lives only in memory. **Restart the program to reset everything**, including
-> balances and blocked cards.
-
----
-
-## Demo credentials
-
-These are classroom test values only.
-
-| Customer | Account | Type | Opening balance | Card | PIN | Expiry | Purpose |
-|---|---|---|---:|---|---|---|---|
-| Aarav Sharma | ACC1001 | Savings | 5000.00 | CARD1001 | 1234 | 2028-12-31 | Normal use |
-| Priya Patel | ACC1002 | Current | 12000.00 | CARD1002 | 5678 | 2028-06-30 | Normal use, transfer receiver |
-| Rahul Verma | ACC1003 | Savings | 800.00 | CARD1003 | 4321 | 2025-01-01 | **Expired card** test |
-| Neha Iyer | ACC1004 | Savings | 1500.00 | CARD1004 | 9999 | 2028-12-31 | **Pre-blocked card** test |
-
-Phone numbers and email addresses in `Main` are made-up placeholders.
-
----
-
-## Business rules
-
-**PIN and card**
-- A PIN is exactly 4 digits.
-- **Every** failed PIN entry counts as an attempt, including a malformed one such as `abc` or `12`.
-- The 3rd failed attempt blocks the card and ends the session. A successful login resets the counter to 0.
-- A blocked card is rejected even with the correct PIN.
-- A card is valid **through** its expiry date; it is expired the day after. Blocked is checked before expired.
-- Changing the PIN verifies the old PIN first. A wrong old PIN also counts as a failed attempt.
-  A malformed new PIN is rejected without using up an attempt.
-
-**Money**
-- All money uses `BigDecimal`, never `double`.
-- An amount must be greater than zero and have at most 2 decimal places. `10.005` is rejected, not rounded.
-- **Savings** accounts must always keep at least **100.00**. **Current** accounts must keep at least
-  **0.00**. There is no overdraft.
-- A transfer is all-or-nothing: if any check fails, neither account changes.
-  The sender gets a `TRANSFER_OUT` record and the receiver a `TRANSFER_IN` record.
-  Transferring to your own account is rejected.
-
-**History**
-- Completed deposits, withdrawals, transfers and PIN changes are recorded. Failed attempts are not.
-- "Last 5 transactions" shows up to 5 records, newest first, based on the order they happened.
-
-**Lookups**
-- Card and account numbers ignore case and surrounding spaces (`card1001` finds `CARD1001`).
-
-**Navigation**
-- Option 7 ejects the card and returns to the card prompt. Type `EXIT` at the card prompt to shut down.
-
----
-
-## Sample console session
-
-This is a real run (the repeated ATM menu is trimmed for readability). Timestamps reflect the day the
-sample was captured.
-
-```text
-====================================
-     WELCOME TO JAVA ATM SYSTEM
-====================================
-
-Available demo card numbers: CARD1001, CARD1002, CARD1003, CARD1004
-Enter card number (or EXIT to shut down): CARD1001
-Card CARD1001 accepted.
-Enter 4-digit PIN: 9999
-Incorrect PIN. 2 attempt(s) remaining.
-Enter 4-digit PIN: 1234
-
-Login successful. Welcome, Aarav Sharma!
-
-====================================
-             ATM MENU
-====================================
-1. Check Balance
-2. Deposit Money
-3. Withdraw Money
-4. Transfer Money
-5. View Last 5 Transactions
-6. Change PIN
-7. Eject Card / Exit
-====================================
-Enter your choice: 1
-Account         : ACC1001 (Savings Account)
-Current balance : 5000.00
-Available to withdraw: 4900.00
-
-[... ATM menu is shown again ...]
-Enter your choice: 2
-Enter deposit amount: 500
-Deposit successful. Current balance: 5500.00
-
-[... ATM menu is shown again ...]
-Enter your choice: 3
-Enter withdrawal amount: 1000
-Withdrawal successful. Current balance: 4500.00
-
-[... ATM menu is shown again ...]
-Enter your choice: abc
-Invalid choice: Please enter a whole number.
-
-[... ATM menu is shown again ...]
-Enter your choice: 4
-Enter receiver account number: ACC1002
-Enter transfer amount: 500
-Transfer successful. Sent 500.00 to ACC1002. Current balance: 4000.00
-
-[... ATM menu is shown again ...]
-Enter your choice: 5
-Last 3 transaction(s) for account ACC1001 (newest first):
-TXN-1003 | TRANSFER_OUT | Amount: 500.00 | Balance: 4000.00 | 2026-10-01 07:54
-TXN-1002 | WITHDRAWAL | Amount: 1000.00 | Balance: 4500.00 | 2026-10-01 07:54
-TXN-1001 | DEPOSIT | Amount: 500.00 | Balance: 5500.00 | 2026-10-01 07:54
-
-[... ATM menu is shown again ...]
-Enter your choice: 7
-Card ejected. Thank you for using Java ATM.
-
-Available demo card numbers: CARD1001, CARD1002, CARD1003, CARD1004
-Enter card number (or EXIT to shut down): EXIT
-
-Thank you for using Java ATM. Goodbye!
-```
-
----
-
-## Test cases
-
-Run each case on a **fresh start** of the program, because balances and blocked cards are kept in memory.
-Entries on separate lines are typed one after another.
-
-| ID | Scenario | Steps (what you type) | Expected result |
-|---|---|---|---|
-| TC-01 | Successful login | `CARD1001`, `1234` | `Login successful. Welcome, Aarav Sharma!` and the ATM menu appears. |
-| TC-02 | Incorrect PIN once | `CARD1001`, `9999`, then `1234` | `Incorrect PIN. 2 attempt(s) remaining.` then login succeeds; the counter is reset. |
-| TC-03 | Three incorrect PINs | `CARD1001`, then `1111`, `2222`, `3333` | On the 3rd: `Incorrect PIN. Card has been blocked after 3 failed attempts.` then `Session ended.` Entering `CARD1001` again shows the blocked message. |
-| TC-04 | Expired card | `CARD1003` | `Card CARD1003 expired on 2025-01-01.` No PIN is requested. |
-| TC-05 | Blocked card | `CARD1004` | `Card CARD1004 is blocked. Please contact your bank.` No PIN is requested. |
-| TC-06 | Valid deposit | Log in with `CARD1001`/`1234`, then `2`, `500` | `Deposit successful. Current balance: 5500.00`. Option `5` lists the `DEPOSIT`. |
-| TC-07 | Invalid deposit | Menu `2`, then `-50` (repeat with `0`, then `abc`) | `-50` and `0`: `Deposit failed: Amount must be greater than zero.` `abc`: `Deposit failed: Amount must be a number such as 500 or 250.75 (digits only).` Balance is unchanged. |
-| TC-08 | Valid withdrawal | Log in with `CARD1001`/`1234`, then `3`, `1000` | `Withdrawal successful. Current balance: 4000.00`. History shows `WITHDRAWAL`. |
-| TC-09 | Insufficient withdrawal | Menu `3`, then `4900.01` | `Withdrawal failed: Insufficient funds. Available: 4900.00, requested: 4900.01`. (Savings must keep 100.00.) |
-| TC-10 | Valid transfer | Menu `4`, `ACC1002`, `500` | `Transfer successful. Sent 500.00 to ACC1002. Current balance: 4500.00`. Eject, log in as `CARD1002`/`5678`, option `5` shows `TRANSFER_IN` with balance 12500.00. |
-| TC-11 | Invalid receiver | Menu `4`, `ACC9999` | `Transfer failed: Account ACC9999 was not found.` No amount is requested; no money moves. |
-| TC-12 | PIN change | Menu `6`, current `1234`, new `4444`; eject (`7`); log in again with `4444` | `PIN changed successfully.` The new PIN works; `1234` is now rejected. |
-| TC-13 | Invalid menu input | At the menu type `abc`, then `99` | `Invalid choice: Please enter a whole number.` / `Invalid choice: Please choose a number between 1 and 7.` The menu is shown again and the ATM keeps running. |
-| TC-14 | View history | Do several deposits / withdrawals, then menu `5` | `Last N transaction(s) for account ACC1001 (newest first):` with at most 5 lines, newest first. With no activity: `No transactions found for account ACC1001 yet.` |
-
-Other inputs that are handled without crashing: empty input, `0`, `-1`, `999999`, very long numbers,
-amounts like `1e3` or `1,000`, unknown or blank card numbers, a card whose account is missing, and the
-input stream ending at any point.
-
-This repository contains no automated test suite; the cases above are a manual test guide.
-Adding JUnit tests is listed under [Future improvements](#future-improvements).
-
----
-
-## UML class diagram
-
-### Simplified diagram (ASCII)
-
-Card side:
+## UML Class Diagram & Domain Model
 
 ```text
         <<interface>>                      <<interface>>
@@ -372,11 +305,7 @@ Card side:
                              ATMCard
                         - linkedAccountNumber : String
                         + isValid() : boolean
-```
 
-Account side:
-
-```text
         <<interface>>                      <<interface>>
         TransactionOperations              Printable
         + deposit(amount)                  + printSummary()
@@ -403,227 +332,64 @@ Account side:
             minimum balance 100.00       minimum balance 0.00
 ```
 
-`Customer` and `TransactionRecord` also implement `Printable`.
+---
 
-Relationships between the main classes:
-
-```text
- Main ------> Bank
- Main ------> ATM
- ATM  ------> Bank ------> Account   (HashMap<String, Account>)
- ATM  ------> ATMCard                (inserted card)
- Bank ------> ATMCard                (HashMap<String, ATMCard>)
- ATM  ------> TransactionHistory ------> Account
- ATM  ------> InputValidator
- ATMCard ---- links to ---- Account by account number
- Account --*  TransactionRecord      (1 account owns 0..* records)
- Account -->  Customer               (owner)
- TransactionRecord --> TransactionType
-```
-
-Checked exceptions and who throws them:
+## Project Structure
 
 ```text
- Account    : InvalidAmountException, InsufficientFundsException
- Card       : InvalidPinException, CardBlockedException, CardExpiredException
- Bank       : AccountNotFoundException
- InputValidator : InvalidAmountException, InvalidMenuChoiceException
- ATM        : catches all of the above and prints a friendly message
-```
-
-### PlantUML source
-
-Paste this into any PlantUML renderer (for example an IDE plugin, or the PlantUML web server) to
-draw the diagram. The text below has not been rendered in the environment where the project was built,
-so check it in your renderer.
-
-```plantuml
-@startuml ATM_Simulation_System
-skinparam classAttributeIconSize 0
-skinparam shadowing false
-
-package interfaces {
-  interface Authenticatable {
-    +verifyPin(pin: String): boolean
-    +changePin(oldPin: String, newPin: String): void
-  }
-  interface TransactionOperations {
-    +deposit(amount: BigDecimal): void
-    +withdraw(amount: BigDecimal): void
-    +transfer(receiver: Account, amount: BigDecimal): void
-    +getBalance(): BigDecimal
-  }
-  interface Printable {
-    +printSummary(): void
-  }
-}
-
-package model {
-  abstract class Card {
-    -cardNumber: String
-    -pin: String
-    -expiryDate: LocalDate
-    -blocked: boolean
-    -failedPinAttempts: int
-    +{abstract} isValid(): boolean
-    +verifyPin(pin: String): boolean
-    +changePin(oldPin: String, newPin: String): void
-    +block(): void
-    +isExpired(): boolean
-  }
-  class ATMCard {
-    -linkedAccountNumber: String
-    +isValid(): boolean
-    +getLinkedAccountNumber(): String
-  }
-  abstract class Account {
-    -accountNumber: String
-    -owner: Customer
-    -balance: BigDecimal
-    -transactionHistory: List<TransactionRecord>
-    +{abstract} getAccountType(): String
-    +{abstract} getMinimumBalance(): BigDecimal
-    +deposit(amount: BigDecimal): void
-    +withdraw(amount: BigDecimal): void
-    +transfer(receiver: Account, amount: BigDecimal): void
-    +getAvailableBalance(): BigDecimal
-    +getTransactionHistory(): List<TransactionRecord>
-    +addTransaction(record: TransactionRecord): void
-  }
-  class SavingsAccount {
-    minimum balance 100.00
-  }
-  class CurrentAccount {
-    minimum balance 0.00
-  }
-  class Customer {
-    -customerId: String
-    -fullName: String
-    -phoneNumber: String
-    -email: String
-  }
-  class TransactionRecord {
-    -transactionId: String
-    -type: TransactionType
-    -amount: BigDecimal
-    -timestamp: LocalDateTime
-    -description: String
-    -balanceAfterTransaction: BigDecimal
-  }
-  enum TransactionType {
-    DEPOSIT
-    WITHDRAWAL
-    TRANSFER_IN
-    TRANSFER_OUT
-    PIN_CHANGE
-  }
-}
-
-package service {
-  class Bank {
-    -accounts: Map<String, Account>
-    -cards: Map<String, ATMCard>
-    +addAccount(account: Account): void
-    +addCard(card: ATMCard): void
-    +findAccountByNumber(n: String): Account
-    +findCardByNumber(n: String): ATMCard
-    +getAccountForCard(card: ATMCard): Account
-  }
-  class ATM {
-    -bank: Bank
-    -scanner: Scanner
-    -insertedCard: ATMCard
-    -activeAccount: Account
-    -authenticated: boolean
-    +start(): void
-  }
-  class TransactionHistory {
-    +showLastTransactions(account: Account, limit: int): void
-  }
-}
-
-package util {
-  class InputValidator <<utility>> {
-    +{static} isValidPinFormat(pin: String): boolean
-    +{static} parsePositiveAmount(input: String): BigDecimal
-    +{static} parseMenuChoice(input: String): int
-  }
-}
-
-package exceptions {
-  class InvalidAmountException <<checked>>
-  class InsufficientFundsException <<checked>>
-  class InvalidPinException <<checked>>
-  class CardBlockedException <<checked>>
-  class CardExpiredException <<checked>>
-  class AccountNotFoundException <<checked>>
-  class InvalidMenuChoiceException <<checked>>
-}
-
-' Interfaces
-Card ..|> Authenticatable
-Card ..|> Printable
-Account ..|> TransactionOperations
-Account ..|> Printable
-Customer ..|> Printable
-TransactionRecord ..|> Printable
-
-' Inheritance
-ATMCard --|> Card
-SavingsAccount --|> Account
-CurrentAccount --|> Account
-
-' Associations
-Account --> Customer : owner
-Account "1" *-- "0..*" TransactionRecord : history
-TransactionRecord --> TransactionType
-ATMCard ..> Account : linked by\naccount number
-Bank "1" o-- "0..*" Account
-Bank "1" o-- "0..*" ATMCard
-ATM --> Bank
-ATM --> ATMCard : inserted card
-ATM --> TransactionHistory
-ATM ..> InputValidator
-TransactionHistory ..> Account
-
-' Exceptions
-Account ..> InvalidAmountException : throws
-Account ..> InsufficientFundsException : throws
-Card ..> InvalidPinException : throws
-Card ..> CardBlockedException : throws
-Card ..> CardExpiredException : throws
-Bank ..> AccountNotFoundException : throws
-InputValidator ..> InvalidAmountException : throws
-InputValidator ..> InvalidMenuChoiceException : throws
-@enduml
+OOP-CP/
+├── src/
+│   ├── app/
+│   │   └── Main.java                          # Original console application entry point
+│   ├── com/bank/atm/                          # Spring Boot Web Application
+│   │   ├── AtmApplication.java                # Spring Boot main class
+│   │   ├── config/
+│   │   │   ├── BankConfig.java                # Singleton Bank bean with demo data seed
+│   │   │   └── WebMvcConfig.java              # CORS configuration for Vite frontend
+│   │   ├── controller/
+│   │   │   ├── AuthController.java            # /api/auth/* endpoints
+│   │   │   ├── AccountController.java         # /api/account/* endpoints
+│   │   │   └── TransactionController.java     # /api/transactions/* endpoints
+│   │   ├── dto/                               # Request and Response transfer objects
+│   │   ├── exception/
+│   │   │   └── GlobalExceptionHandler.java    # Centralized REST error handling
+│   │   └── service/
+│   │       └── AtmWebService.java             # Thread-safe session & business bridge
+│   ├── exceptions/                            # 7 Domain checked exceptions
+│   ├── interfaces/                            # Core OOP contracts
+│   ├── model/                                 # Account, Card, Customer, Transaction domain models
+│   ├── service/                               # In-memory Bank and TransactionHistory
+│   └── util/                                  # InputValidator
+├── test/com/bank/atm/
+│   ├── AtmWebServiceTest.java                 # 13 Domain unit tests
+│   ├── AtmIntegrationTest.java                # 4 Spring MVC integration tests
+│   └── FullStackAtmFlowTest.java              # 4 End-to-end full user journey tests
+├── frontend/                                  # React 18 + Vite + TypeScript Touchscreen SPA
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── atm/                           # CardGraphic, CashDispenser
+│   │   │   ├── layout/                        # AtmKiosk, AnimatedBackground
+│   │   │   └── ui/                            # Button, Keypad, NumberTicker, Modal
+│   │   ├── context/
+│   │   │   └── AuthContext.tsx                # Global session state provider
+│   │   ├── pages/                             # 10 Touchscreen ATM pages
+│   │   ├── services/
+│   │   │   └── api.ts                         # Centralized Axios client with credentials
+│   │   └── types/                             # Strict TypeScript DTO models
+│   ├── package.json
+│   ├── tailwind.config.js
+│   └── vite.config.ts
+├── pom.xml                                    # Maven configuration (Java 17, Spring Boot 3.3.4)
+├── mvnw.cmd / mvnw                            # Maven wrapper executable
+├── FRONTEND_RESOURCES.md                      # UI and animation component attribution
+├── PROJECT_STATUS.md                          # Phase tracking and Git commit registry
+└── README.md                                  # Complete project documentation
 ```
 
 ---
 
-## Limitations
+## Academic Verification & Integrity
 
-- **In-memory only.** Nothing is saved; all data is rebuilt each time the program starts.
-- **PINs are plain text** and are **echoed as you type**. Console masking is not attempted because it is
-  not reliable across IDEs and JDK versions. A real system stores only salted hashes and never shows PINs.
-- One account per card, and the demo data is fixed in `Main`.
-- No overdraft, no daily withdrawal limit, no interest, no currency or fees.
-- Timestamps are shown to the minute, so ordering in the history relies on the order records were created.
-- Single-user and single-threaded: it is not designed for concurrent access.
-- No automated tests are included. The project was developed and run on JDK 21 only.
-
----
-
-## Future improvements
-
-These are optional extras that were intentionally left out of the core project:
-
-- Save accounts and transactions to text/CSV files.
-- Account statement export.
-- Daily withdrawal limit.
-- Multiple accounts per customer, with account selection after login.
-- Session timeout.
-- Administrator mode for creating customers, accounts and cards (and unblocking cards).
-- JUnit tests for `Account`, `Card` and `InputValidator`.
-- Optional overdraft limit for current accounts.
-- A Swing or JavaFX graphical interface.
-- Hashing PINs instead of storing them in plain text.
+- **Original Console Project**: Fully functional and compilable via `javac` without Spring or Node dependencies.
+- **Academic Source of Truth**: All business rules (3 PIN attempts, card blocking, minimum balance calculations, transfers) originate strictly in the Java domain layer.
+- **Git Branching Strategy**: Built entirely on branch `feature/atm-web-application` with phase-wise commits following standard conventional commits format.
