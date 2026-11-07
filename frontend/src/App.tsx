@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { AnimatedBackground } from './components/layout/AnimatedBackground';
 import { AtmKiosk } from './components/layout/AtmKiosk';
 
@@ -23,7 +24,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <svg className="animate-spin h-8 w-8 text-cyan-400" fill="none" viewBox="0 0 24 24">
+        <svg className="animate-spin h-6 w-6 text-accent" fill="none" viewBox="0 0 24 24">
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
         </svg>
@@ -45,11 +46,11 @@ const AppRoutes: React.FC = () => {
   const getScreenDetails = (pathname: string) => {
     switch (pathname) {
       case '/':
-        return { title: 'Welcome Terminal', showBack: false };
+        return { title: 'Welcome', showBack: false };
       case '/pin':
-        return { title: 'Security Verification', showBack: false };
+        return { title: 'Authentication', showBack: false };
       case '/dashboard':
-        return { title: 'Touch Terminal Dashboard', showBack: false };
+        return { title: 'Dashboard', showBack: false };
       case '/balance':
         return { title: 'Balance Inquiry', showBack: true };
       case '/deposit':
@@ -59,13 +60,13 @@ const AppRoutes: React.FC = () => {
       case '/transfer':
         return { title: 'Funds Transfer', showBack: true };
       case '/history':
-        return { title: 'Transaction Ledger', showBack: true };
+        return { title: 'Recent Activity', showBack: true };
       case '/change-pin':
-        return { title: 'PIN Management', showBack: true };
+        return { title: 'Security Settings', showBack: true };
       case '/eject':
-        return { title: 'Card Ejection', showBack: false };
+        return { title: 'Card Return', showBack: false };
       default:
-        return { title: 'ATM System', showBack: false };
+        return { title: '', showBack: false };
     }
   };
 
@@ -141,12 +142,14 @@ const AppRoutes: React.FC = () => {
 
 export const App: React.FC = () => {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <AnimatedBackground />
-        <AppRoutes />
-      </AuthProvider>
-    </BrowserRouter>
+    <ThemeProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <AnimatedBackground />
+          <AppRoutes />
+        </AuthProvider>
+      </BrowserRouter>
+    </ThemeProvider>
   );
 };
 

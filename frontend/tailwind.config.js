@@ -8,39 +8,58 @@ export default {
   theme: {
     extend: {
       colors: {
+        canvas: "var(--canvas)",
+        surface: {
+          DEFAULT: "var(--surface)",
+          subdued: "var(--surface-subdued)",
+          hover: "var(--surface-hover)",
+        },
+        border: {
+          subtle: "var(--border-subtle)",
+          strong: "var(--border-strong)",
+        },
+        primary: "var(--text-primary)",
+        secondary: "var(--text-secondary)",
+        tertiary: "var(--text-tertiary)",
+        accent: {
+          DEFAULT: "var(--accent)",
+          hover: "var(--accent-hover)",
+          subtle: "var(--accent-subtle)",
+        },
+        danger: {
+          DEFAULT: "var(--danger)",
+          subtle: "var(--danger-subtle)",
+        },
+        success: {
+          DEFAULT: "var(--success)",
+          subtle: "var(--success-subtle)",
+        },
+        warning: {
+          DEFAULT: "var(--warning)",
+          subtle: "var(--warning-subtle)",
+        },
+        // Legacy colors for backwards compatibility
         atm: {
-          bg: "#070B14",
-          card: "#0D1527",
-          panel: "#121D36",
-          accent: "#2563EB",
-          cyan: "#06B6D4",
-          emerald: "#10B981",
-          amber: "#F59E0B",
-          rose: "#F43F5E",
-          border: "#1E2E4E",
-          muted: "#94A3B8",
-          text: "#F8FAFC",
+          bg: "var(--canvas)",
+          card: "var(--surface)",
+          panel: "var(--surface-subdued)",
+          accent: "var(--accent)",
+          cyan: "var(--accent)",
+          emerald: "var(--success)",
+          amber: "var(--warning)",
+          rose: "var(--danger)",
+          border: "var(--border-subtle)",
+          muted: "var(--text-secondary)",
+          text: "var(--text-primary)",
         }
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        mono: ['JetBrains Mono', 'Fira Code', 'Courier New', 'monospace'],
-        display: ['Orbitron', 'Rajdhani', 'sans-serif'],
+        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', '"Segoe UI"', 'Roboto', 'sans-serif'],
+        mono: ['"JetBrains Mono"', '"SF Mono"', 'ui-monospace', 'monospace'],
       },
-      animation: {
-        'shimmer': 'shimmer 2.5s linear infinite',
-        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        'glow': 'glow 3s ease-in-out infinite alternate',
-      },
-      keyframes: {
-        shimmer: {
-          '0%': { backgroundPosition: '-200% 0' },
-          '100%': { backgroundPosition: '200% 0' },
-        },
-        glow: {
-          '0%': { boxShadow: '0 0 15px rgba(37, 99, 235, 0.2)' },
-          '100%': { boxShadow: '0 0 35px rgba(6, 182, 212, 0.4)' },
-        }
+      boxShadow: {
+        'luxury': 'var(--card-shadow)',
+        'elevated': '0 12px 32px -4px rgba(0, 0, 0, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.04)',
       }
     },
   },

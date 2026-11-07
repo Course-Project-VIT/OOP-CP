@@ -82,6 +82,27 @@
   - Overhauled `README.md` with full architecture diagrams, setup instructions, REST API tables, and test guides.
   - Finalized `FRONTEND_RESOURCES.md` with complete attribution and licensing details.
   - Updated `PROJECT_STATUS.md` with complete commit log and acceptance criteria validation.
+- [x] **Phase 8: Minimal Luxury Visual Redesign (Phase 1: Welcome & PIN Authentication)**
+  - **Design Style**: Minimal Luxury (inspired by Apple, Linear, Apple Wallet, Stripe, Revolut).
+  - **Centralized Design Tokens**: Defined light & dark theme variables in `index.css` and `tailwind.config.js` (`--canvas`, `--surface`, `--surface-subdued`, `--surface-hover`, `--border-subtle`, `--text-primary`, `--text-secondary`, `--text-tertiary`, `--accent`, `--danger`, `--success`, `--warning`).
+  - **Light & Dark Theme Engine**: Implemented `ThemeContext` and `useTheme` with persistence to `localStorage` and system preference detection.
+  - **Theme Toggle Component**: Built `ThemeToggle` with smooth animated Sun / Moon transition.
+  - **Kiosk Enclosure Overhaul**: Stripped out fake sci-fi terminal styling (screws, cooling vents, neon green badges) and replaced with an Apple Studio Display / iPad Pro floating chassis with delicate hairline borders and refined header.
+  - **Welcome Screen Redesign**:
+    - Primary card insertion interaction with minimalist slot animation.
+    - Titanium (light) & Obsidian (dark) Apple Card-inspired debit card presentation with subtle laser-etched aesthetics.
+    - Minimalist card number input.
+    - Compact demo profile selector displaying **strictly public profile info** (Card Number, Name, Account Type, Status) with **zero exposure of private demo PINs or balances**.
+  - **PIN Authentication Redesign**:
+    - Apple Lockscreen aesthetic with compact card identity preview (`•••• 1001` • Aarav Sharma).
+    - 4 discrete spring-animated PIN indicator dots with subtle error shake.
+    - Refined circular touch keypad with tactile hover and tap feedback (`whileTap={{ scale: 0.94 }}`).
+    - Full physical keyboard listener support (0-9, Backspace, Escape, Enter).
+    - Automatic submit upon 4th digit entry for a frictionless experience.
+  - **Verification**:
+    - Frontend production bundle built cleanly in 2.15s (`npm.cmd run build`).
+    - Backend JUnit 5 test suite: 21/21 tests passing (`mvnw.cmd test`).
+    - Hot module reload active on `http://localhost:5173`.
 
 ---
 

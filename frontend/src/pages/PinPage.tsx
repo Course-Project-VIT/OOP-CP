@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { CardGraphic } from '../components/atm/CardGraphic';
 import { Keypad } from '../components/ui/Keypad';
 import { motion, AnimatePresence } from 'motion/react';
 import { Lock, AlertCircle, ArrowLeft } from 'lucide-react';
@@ -12,25 +11,40 @@ export const PinPage: React.FC = () => {
   const { cardStatus, login, isLoading, error, clearCard, clearError } = useAuth();
   const navigate = useNavigate();
 
-  // If no card is inserted, redirect back to welcome
-  if (!cardStatus) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-slate-400 mb-4">No card has been inserted yet.</p>
-        <button
-          onClick={() => navigate('/')}
-          className="text-cyan-400 font-bold underline cursor-pointer"
-        >
-          Return to Card Selection
-        </button>
-      </div>
-    );
-  }
+  // Redirect to welcome if no card is inserted
+  useEffect(() => {
+    if (!cardStatus) {
+      navigate('/', { replace: true });
+    }
+  }, [cardStatus, navigate]);
+
+  const handleSubmitPin = useCallback(
+    async (pinToSubmit: string) => {
+      if (pinToSubmit.length !== 4 || isLoading) return;
+
+      const success = await login(pinToSubmit);
+      if (success) {
+        navigate('/dashboard');
+      } else {
+        // Trigger Apple-style subtle shake
+        setIsShaking(true);
+        setTimeout(() => setIsShaking(false), 500);
+        setPin('');
+      }
+    },
+    [isLoading, login, navigate]
+  );
 
   const handleKeyPress = (num: string) => {
     if (pin.length < 4) {
-      setPin((prev) => prev + num);
+      const nextPin = pin + num;
+      setPin(nextPin);
       clearError();
+
+      // Auto-submit on 4th digit for seamless luxury feel
+      if (nextPin.length === 4) {
+        handleSubmitPin(nextPin);
+      }
     }
   };
 
@@ -44,129 +58,142 @@ export const PinPage: React.FC = () => {
     clearError();
   };
 
-  const handleSubmit = async () => {
-    if (pin.length !== 4) return;
+  // Keyboard navigation listener (support physical number keys)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (isLoading) return;
+      if (e.key >= '0' && e.key <= '9') {
+        handleKeyPress(e.key);
+      } else if (e.key === 'Backspace') {
+        handleBackspace();
+      } else if (e.key === 'Escape') {
+        handleClear();
+      }
+    };
 
-    const success = await login(pin);
-    if (success) {
-      navigate('/dashboard');
-    } else {
-      // Trigger shake animation
-      setIsShaking(true);
-      setTimeout(() => setIsShaking(false), 600);
-      setPin('');
-    }
-  };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [pin, isLoading]);
 
-  const triggerShake = isShaking
+  if (!cardStatus) {
+    return null;
+  }
+
+  const shakeAnimation = isShaking
     ? {
-        x: [-12, 12, -10, 10, -6, 6, 0],
-        transition: { duration: 0.5 },
+        x: [-10, 10, -8, 8, -4, 4, 0],
+        transition: { duration: 0.4 },
       }
     : {};
 
   return (
-    <div className="flex flex-col lg:flex-row items-center justify-center gap-8 py-2">
-      {/* Left Column: Card Visual & Security Advice */}
+    <div className="flex flex-col items-center justify-center py-2 sm:py-4">
+      {/* Top Breadcrumb / Card Pill */}
       <motion.div
-        initial={{ opacity: 0, x: -30 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.5 }}
-        className="flex flex-col items-center max-w-sm text-center"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center gap-3 px-3.5 py-1.5 rounded-full bg-surface-subdued border border-border-subtle mb-6 text-xs"
       >
-        <CardGraphic
-          cardNumber={cardStatus.cardNumber}
-          cardHolderName={cardStatus.cardHolderName}
-          expiryDate={cardStatus.expiryDate}
-          accountType={cardStatus.accountType}
-          isBlocked={cardStatus.blocked}
-          isExpired={cardStatus.expired}
-          className="mb-6"
-        />
+        <span className="font-mono font-medium text-primary">
+          {cardStatus.maskedCardNumber || cardStatus.cardNumber}
+        </span>
+        <span className="w-1 h-1 rounded-full bg-border-strong" />
+        <span className="text-secondary font-medium">{cardStatus.cardHolderName}</span>
+        <span className="w-1 h-1 rounded-full bg-border-strong" />
+        <span className="text-tertiary">{cardStatus.accountType.replace(' Account', '')}</span>
+      </motion.div>
 
-        <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 text-xs text-slate-400 text-left w-full space-y-2">
-          <div className="flex items-center gap-1.5 font-bold text-slate-300">
-            <Lock className="w-4 h-4 text-cyan-400" />
-            <span>PIN Security Guidelines</span>
-          </div>
-          <p>• Never disclose your 4-digit PIN to anyone.</p>
-          <p>• 3 consecutive wrong attempts will automatically lock your card.</p>
-          <p>• Remaining attempts: <strong className="text-amber-400">{cardStatus.remainingAttempts}</strong></p>
-        </div>
+      {/* Screen Title */}
+      <div className="text-center mb-6">
+        <h1 className="text-2xl font-semibold tracking-tight text-primary">
+          Enter Your PIN
+        </h1>
+        <p className="text-xs sm:text-sm text-secondary mt-1">
+          Please enter your 4-digit security code.
+        </p>
+      </div>
 
+      {/* Error Alert */}
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -8, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.98 }}
+            className="w-full max-w-xs mb-4 p-3 rounded-xl bg-danger-subtle border border-danger/20 text-danger text-xs flex items-start gap-2"
+          >
+            <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-medium">Verification Failed</p>
+              <p className="opacity-90 mt-0.5">{error}</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 4 Animated PIN Indicator Dots */}
+      <motion.div
+        animate={shakeAnimation}
+        className="flex items-center justify-center gap-4 mb-6 py-2"
+      >
+        {[0, 1, 2, 3].map((index) => {
+          const isFilled = index < pin.length;
+          return (
+            <motion.div
+              key={index}
+              initial={false}
+              animate={{
+                scale: isFilled ? [1, 1.25, 1] : 1,
+                backgroundColor: isFilled ? 'var(--text-primary)' : 'transparent',
+              }}
+              transition={{ duration: 0.2 }}
+              className={`w-3.5 h-3.5 rounded-full border ${
+                isFilled ? 'border-primary' : 'border-border-strong'
+              }`}
+            />
+          );
+        })}
+      </motion.div>
+
+      {/* Security notice & attempts left */}
+      <div className="text-[11px] text-tertiary text-center mb-5 flex items-center justify-center gap-1.5">
+        <Lock className="w-3 h-3 text-tertiary" />
+        <span>
+          {cardStatus.remainingAttempts < 3 ? (
+            <strong className="text-warning font-medium">
+              {cardStatus.remainingAttempts} attempts remaining before card locks
+            </strong>
+          ) : (
+            <span>3 attempts remaining</span>
+          )}
+        </span>
+      </div>
+
+      {/* Refined Circular Touch Keypad */}
+      <Keypad
+        onKeyPress={handleKeyPress}
+        onBackspace={handleBackspace}
+        onClear={handleClear}
+        onSubmit={() => handleSubmitPin(pin)}
+        submitLabel="Confirm PIN"
+        submitDisabled={pin.length !== 4}
+        isLoading={isLoading}
+      />
+
+      {/* Cancel Action */}
+      <div className="mt-6 text-center">
         <button
+          type="button"
           onClick={() => {
             clearCard();
             navigate('/');
           }}
-          className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-rose-400 transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs text-secondary hover:text-primary transition-colors cursor-pointer select-none"
         >
-          <ArrowLeft className="w-3.5 h-3.5" /> Cancel & Eject Card
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>Cancel and return card</span>
         </button>
-      </motion.div>
-
-      {/* Right Column: PIN Dots and Touchscreen Keypad */}
-      <motion.div
-        initial={{ opacity: 0, x: 30 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.5 }}
-        className="flex flex-col items-center w-full max-w-sm"
-      >
-        <div className="text-center mb-4">
-          <h2 className="text-xl font-black text-slate-100 font-display">ENTER 4-DIGIT PIN</h2>
-          <p className="text-xs text-slate-400 mt-1">Please use the touchscreen numeric keypad below</p>
-        </div>
-
-        {/* PIN Indicators with Shake Motion */}
-        <motion.div
-          animate={triggerShake}
-          className="flex items-center justify-center gap-4 my-4 p-4 rounded-2xl bg-slate-950 border border-slate-800 shadow-inner w-full"
-        >
-          {[0, 1, 2, 3].map((index) => {
-            const hasDigit = pin.length > index;
-            return (
-              <motion.div
-                key={index}
-                animate={{
-                  scale: hasDigit ? [1, 1.3, 1] : 1,
-                  backgroundColor: hasDigit ? '#06B6D4' : '#1E293B',
-                  borderColor: hasDigit ? '#38BDF8' : '#334155',
-                }}
-                transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-                className={`w-6 h-6 rounded-full border-2 transition-all ${
-                  hasDigit ? 'shadow-[0_0_15px_#06b6d4]' : ''
-                }`}
-              />
-            );
-          })}
-        </motion.div>
-
-        {/* Error Alert */}
-        <AnimatePresence>
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              className="w-full mb-3 p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2"
-            >
-              <AlertCircle className="w-4 h-4 flex-shrink-0 text-rose-400" />
-              <span>{error}</span>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Numeric Keypad */}
-        <Keypad
-          onKeyPress={handleKeyPress}
-          onBackspace={handleBackspace}
-          onClear={handleClear}
-          onSubmit={handleSubmit}
-          submitDisabled={pin.length !== 4}
-          submitLabel="Authenticate"
-          isLoading={isLoading}
-        />
-      </motion.div>
+      </div>
     </div>
   );
 };
