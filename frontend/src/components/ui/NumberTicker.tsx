@@ -11,29 +11,31 @@ interface NumberTickerProps {
 }
 
 export const NumberTicker: React.FC<NumberTickerProps> = ({
-  value,
+  value = 0,
   className = '',
   prefix = '₹',
   suffix = '',
   decimals = 2,
 }) => {
-  const spring = useSpring(value, {
+  const safeInitial = typeof value === 'number' && !isNaN(value) ? value : 0;
+  const spring = useSpring(safeInitial, {
     mass: 0.8,
     stiffness: 75,
     damping: 15,
   });
 
   const display = useTransform(spring, (current) => {
-    return `${prefix}${current.toLocaleString('en-IN', {
+    const safeCurrent = typeof current === 'number' && !isNaN(current) ? current : 0;
+    return `${prefix}${safeCurrent.toLocaleString('en-IN', {
       minimumFractionDigits: decimals,
       maximumFractionDigits: decimals,
     })}${suffix}`;
   });
 
   useEffect(() => {
-    spring.set(value);
+    const safeValue = typeof value === 'number' && !isNaN(value) ? value : 0;
+    spring.set(safeValue);
   }, [value, spring]);
 
   return <motion.span className={`inline-block font-mono tracking-tight ${className}`}>{display}</motion.span>;
 };
-
