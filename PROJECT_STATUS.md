@@ -96,7 +96,8 @@
 - `f361922` - `feat: implement ATM dashboard` (Phase 4)
 - `793a7cb` - `feat: implement transaction screens` (Phase 4)
 - `52b43a0` - `feat: integrate frontend with Java backend` (Phase 5 & 6)
-- *(Current)* - `docs: add project documentation` (Phase 7)
+- `c551cee` - `docs: add project documentation` (Phase 7)
+
 
 ---
 
