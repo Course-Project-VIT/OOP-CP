@@ -19,3 +19,4 @@ echo Both servers launched! Opening browser...
 echo ========================================================
 timeout /t 3 /nobreak >nul
 start http://localhost:5173
+
