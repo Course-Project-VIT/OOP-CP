@@ -51,8 +51,33 @@
     10. `EjectPage`: Card ejection animation, thank-you banner, 5-second countdown to return to home.
   - Authored `FRONTEND_RESOURCES.md` tracking all component patterns, adaptations, and licenses.
   - Verified clean TypeScript compilation and production bundle build.
-- [ ] **Phase 5: Backend & Frontend Integration**
-- [ ] **Phase 6: Testing & Quality Assurance**
+- [x] **Phase 5: Backend & Frontend Integration**
+  - Integrated React frontend with Spring Boot REST endpoints via Vite proxy (`/api` -> `http://localhost:8080`).
+  - Enabled cookie session credential sharing (`JSESSIONID`).
+  - Connected interactive touchscreen ATM screens directly to live Java backend business logic:
+    - Card insertion & authentication via `POST /api/auth/card` and `POST /api/auth/login`.
+    - Real-time balance queries via `GET /api/account/balance`.
+    - Cash deposits with live credit updates via `POST /api/transactions/deposit`.
+    - Cash withdrawals with dispenser animation via `POST /api/transactions/withdraw`.
+    - Account-to-account funds transfers with balance verification via `POST /api/transactions/transfer`.
+    - Transaction history inspection via `GET /api/transactions/recent`.
+    - PIN changes with live card updates via `POST /api/auth/change-pin`.
+    - Session invalidation and card ejection via `POST /api/auth/logout`.
+- [x] **Phase 6: Testing & Quality Assurance**
+  - Executed 21 unit and integration tests with Maven (`FullStackAtmFlowTest`, `AtmIntegrationTest`, `AtmWebServiceTest`).
+  - Tested 100% of required business rule matrix:
+    - Valid card authentication & session initialization.
+    - Expired card rejection (`CARD1003` -> HTTP 400).
+    - Pre-blocked card rejection (`CARD1004` -> HTTP 403).
+    - 3-failed-attempts automatic card blocking.
+    - Minimum balance rule enforcement (Savings ₹100.00, Current ₹0.00).
+    - Overdraw prevention and InsufficientFundsException mapping.
+    - Negative/zero transaction rejection.
+    - Self-transfer rejection.
+    - PIN change format validation and old PIN authentication.
+    - Session timeout and unauthenticated access protection (HTTP 401).
+  - Executed frontend production build (`npm run build`) passing TypeScript strict checks with 0 errors.
+  - Verified original console application (`javac -d bin ...` and `java -cp bin app.Main`) runs cleanly without regressions.
 - [ ] **Phase 7: Final Documentation & Project Handoff**
 
 ---
@@ -63,6 +88,11 @@
 - `28beccf` - `feat: implement account management APIs` (Phase 2)
 - `af4001c` - `feat: implement transaction APIs` (Phase 2)
 - `f2063a4` - `test: add ATM integration tests` (Phase 2)
+- `f81b7e6` - `feat: initialize React frontend` (Phase 3)
+- `a9956bc` - `feat: implement ATM authentication interface` (Phase 4)
+- `f361922` - `feat: implement ATM dashboard` (Phase 4)
+- `793a7cb` - `feat: implement transaction screens` (Phase 4)
+
 
 
 

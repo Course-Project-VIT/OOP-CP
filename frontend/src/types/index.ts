@@ -74,3 +74,4 @@ export interface DemoCard {
   status: 'active' | 'expired' | 'blocked';
   notes: string;
 }
+

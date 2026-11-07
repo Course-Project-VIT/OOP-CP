@@ -132,3 +132,4 @@ export const CardGraphic: React.FC<CardGraphicProps> = ({
     </motion.div>
   );
 };
+

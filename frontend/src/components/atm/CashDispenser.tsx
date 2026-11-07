@@ -80,3 +80,4 @@ export const CashDispenser: React.FC<CashDispenserProps> = ({
     </div>
   );
 };
+

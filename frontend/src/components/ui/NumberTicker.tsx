@@ -36,3 +36,4 @@ export const NumberTicker: React.FC<NumberTickerProps> = ({
 
   return <motion.span className={`inline-block font-mono tracking-tight ${className}`}>{display}</motion.span>;
 };
+

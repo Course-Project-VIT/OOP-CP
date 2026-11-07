@@ -93,3 +93,4 @@ In compliance with section 4:
 - All component source code is directly adapted and maintained inside `frontend/src/`.
 - No runtime CDNs, external script tags, or remote stylesheet dependencies are required.
 - The build is 100% self-contained and operates completely offline once built.
+
