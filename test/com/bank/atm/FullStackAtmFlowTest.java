@@ -69,6 +69,13 @@ class FullStackAtmFlowTest {
                 .andExpect(jsonPath("$.data.authenticated").value(true))
                 .andExpect(jsonPath("$.data.customerName").value("Aarav Sharma"));
 
+        // 3b. Verify Account Details Endpoint
+        mockMvc.perform(get("/api/account/details").session(session))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.fullName").value("Aarav Sharma"))
+                .andExpect(jsonPath("$.data.accountNumber").value("ACC1001"));
+
         // 4. Initial Balance Inquiry (Opening: 5000.00, Min Balance: 100.00, Available: 4900.00)
         mockMvc.perform(get("/api/account/balance").session(session))
                 .andExpect(status().isOk())

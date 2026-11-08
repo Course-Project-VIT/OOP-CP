@@ -75,10 +75,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const sess = await api.login(cardStatus.cardNumber, pin);
       setSession(sess);
-      const details = await api.getAccountDetails();
-      setAccount(details);
-      const bal = await api.getBalance();
-      setBalanceInfo(bal);
+
+      // Pre-fetch account details and balance
+      try {
+        const [details, bal] = await Promise.all([
+          api.getAccountDetails(),
+          api.getBalance(),
+        ]);
+        setAccount(details);
+        setBalanceInfo(bal);
+      } catch {
+        // Secondary fetch failure should not block successful authentication;
+        // DashboardPage independently refreshes balance and details upon mounting.
+      }
+
       return true;
     } catch (err) {
       const msg = getErrorMessage(err);

@@ -5,7 +5,7 @@ echo        STARTING APEX BANK FULL-STACK ATM SYSTEM
 echo ========================================================
 echo.
 echo 1. Launching Spring Boot Backend (Port 8080)...
-start "APEX ATM - Backend" cmd /k ".\mvnw.cmd spring-boot:run"
+start "APEX ATM - Backend" cmd /k ".\mvnw.cmd compile spring-boot:run"
 
 echo 2. Waiting 5 seconds for backend to start...
 timeout /t 5 /nobreak >nul
