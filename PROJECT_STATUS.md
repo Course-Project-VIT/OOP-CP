@@ -99,8 +99,15 @@
     - Refined circular touch keypad with tactile hover and tap feedback (`whileTap={{ scale: 0.94 }}`).
     - Full physical keyboard listener support (0-9, Backspace, Escape, Enter).
     - Automatic submit upon 4th digit entry for a frictionless experience.
+  - **Post-Login Stability Fixes**:
+    - Resolved `balanceAfterTransaction` DTO naming mismatch in `DashboardPage.tsx`.
+    - Added defensive number checking to `NumberTicker.tsx`.
+    - Terminated stale background Java PID 924 running an outdated classpath.
+    - Clean-compiled backend (`mvnw clean compile`) and verified `/api/account/details` returns HTTP 200.
+    - Decoupled pre-fetch errors in `AuthContext.tsx` so transient secondary network delays do not falsely fail PIN authentication.
+    - Updated `start-atm.bat` to `compile spring-boot:run` ensuring fresh binaries on every launch.
   - **Verification**:
-    - Frontend production bundle built cleanly in 2.15s (`npm.cmd run build`).
+    - Frontend production bundle built cleanly in 2.28s (`npm.cmd run build`).
     - Backend JUnit 5 test suite: 21/21 tests passing (`mvnw.cmd test`).
     - Hot module reload active on `http://localhost:5173`.
 
