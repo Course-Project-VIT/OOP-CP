@@ -1,30 +1,31 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { api, getErrorMessage } from '../services/api';
-import type { TransactionItem } from '../types';
-import { motion } from 'motion/react';
-import {
-  History,
-  TrendingDown,
-  TrendingUp,
-  KeyRound,
-  RefreshCw,
-  Clock,
-  ArrowUpRight,
-  ArrowDownLeft,
-  AlertCircle,
-} from 'lucide-react';
+import type { TransactionItem as TransactionItemType } from '../types';
+import { TransactionItem } from '../components/transactions/TransactionItem';
+import { ATMTransition } from '../components/layout/ATMTransition';
 import { Button } from '../components/ui/Button';
+import { motion, AnimatePresence } from 'motion/react';
+import { History, RefreshCw, AlertCircle, ArrowLeft } from 'lucide-react';
+
+type FilterType = 'ALL' | 'DEPOSITS' | 'WITHDRAWALS' | 'TRANSFERS';
 
 export const HistoryPage: React.FC = () => {
-  const [transactions, setTransactions] = useState<TransactionItem[]>([]);
+  const [transactions, setTransactions] = useState<TransactionItemType[]>([]);
+  const [filter, setFilter] = useState<FilterType>('ALL');
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+
+  const { account } = useAuth();
+  const navigate = useNavigate();
 
   const fetchHistory = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await api.getRecentTransactions(5);
+      // Backend supports count parameter; get the latest 10 transactions
+      const data = await api.getRecentTransactions(10);
       setTransactions(data);
     } catch (err) {
       setError(getErrorMessage(err));
@@ -37,168 +38,131 @@ export const HistoryPage: React.FC = () => {
     fetchHistory();
   }, []);
 
-  const formatTimestamp = (iso: string) => {
-    try {
-      const date = new Date(iso);
-      return date.toLocaleString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true,
-      });
-    } catch {
-      return iso;
-    }
-  };
+  const filteredTransactions = transactions.filter((tx) => {
+    if (filter === 'ALL') return true;
+    if (filter === 'DEPOSITS') return tx.type === 'DEPOSIT';
+    if (filter === 'WITHDRAWALS') return tx.type === 'WITHDRAWAL';
+    if (filter === 'TRANSFERS') return tx.type === 'TRANSFER_IN' || tx.type === 'TRANSFER_OUT';
+    return true;
+  });
 
-  const getBadge = (type: string) => {
-    switch (type) {
-      case 'DEPOSIT':
-        return {
-          icon: <ArrowDownLeft className="w-4 h-4 text-emerald-400" />,
-          badge: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
-          sign: '+',
-          color: 'text-emerald-400',
-        };
-      case 'TRANSFER_IN':
-        return {
-          icon: <TrendingUp className="w-4 h-4 text-emerald-400" />,
-          badge: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
-          sign: '+',
-          color: 'text-emerald-400',
-        };
-      case 'WITHDRAWAL':
-        return {
-          icon: <ArrowUpRight className="w-4 h-4 text-rose-400" />,
-          badge: 'bg-rose-500/15 text-rose-400 border-rose-500/30',
-          sign: '-',
-          color: 'text-rose-400',
-        };
-      case 'TRANSFER_OUT':
-        return {
-          icon: <TrendingDown className="w-4 h-4 text-rose-400" />,
-          badge: 'bg-rose-500/15 text-rose-400 border-rose-500/30',
-          sign: '-',
-          color: 'text-rose-400',
-        };
-      case 'PIN_CHANGE':
-        return {
-          icon: <KeyRound className="w-4 h-4 text-blue-400" />,
-          badge: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
-          sign: '',
-          color: 'text-slate-400',
-        };
-      default:
-        return {
-          icon: <Clock className="w-4 h-4 text-slate-400" />,
-          badge: 'bg-slate-700 text-slate-300 border-slate-600',
-          sign: '',
-          color: 'text-slate-200',
-        };
-    }
-  };
+  const filterButtons: { label: string; value: FilterType }[] = [
+    { label: 'All Operations', value: 'ALL' },
+    { label: 'Deposits', value: 'DEPOSITS' },
+    { label: 'Withdrawals', value: 'WITHDRAWALS' },
+    { label: 'Transfers', value: 'TRANSFERS' },
+  ];
 
   return (
-    <div className="max-w-3xl mx-auto py-2">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-400 text-xs font-semibold mb-2">
-            <History className="w-3.5 h-3.5" />
-            <span>Activity Ledger</span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-100 font-display">
-            RECENT TRANSACTIONS
-          </h1>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Displaying the last 5 operations (newest first)
-          </p>
-        </div>
-
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={fetchHistory}
-          isLoading={isLoading}
-          icon={<RefreshCw className="w-3.5 h-3.5" />}
-        >
-          Refresh Log
-        </Button>
-      </div>
-
-      {/* Transaction List */}
-      <div className="space-y-3">
-        {error && (
-          <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-rose-400 flex-shrink-0" />
-            <span>{error}</span>
-          </div>
-        )}
-        {isLoading ? (
-          <div className="text-center py-16">
-            <svg className="animate-spin h-8 w-8 text-cyan-400 mx-auto mb-2" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-            </svg>
-            <p className="text-xs text-slate-400 font-mono">Fetching transaction records from Bank...</p>
-          </div>
-        ) : transactions.length === 0 ? (
-          <div className="text-center py-16 p-6 rounded-2xl bg-slate-900/60 border border-slate-800">
-            <History className="w-12 h-12 text-slate-600 mx-auto mb-2" />
-            <p className="text-slate-300 font-bold">No transactions found</p>
-            <p className="text-xs text-slate-500 mt-1">
-              Your account currently has no recorded transactions.
+    <ATMTransition>
+      <div className="max-w-2xl mx-auto py-2">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <span className="text-xs uppercase tracking-wider text-tertiary font-medium">
+              Activity Ledger
+            </span>
+            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-primary mt-1">
+              Transaction History
+            </h1>
+            <p className="text-xs text-secondary mt-1 font-mono">
+              Account: {account?.accountNumber} ({account?.accountType})
             </p>
           </div>
-        ) : (
-          transactions.map((tx, index) => {
-            const style = getBadge(tx.type);
-            return (
-              <motion.div
-                key={tx.transactionId}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="p-4 rounded-xl bg-slate-900/80 hover:bg-slate-850 border border-slate-800/80 shadow-md flex flex-wrap items-center justify-between gap-4 transition-all"
-              >
-                {/* Left: Icon & Description */}
-                <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800">
-                    {style.icon}
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-slate-100 text-sm">{tx.description}</span>
-                      <span
-                        className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border ${style.badge}`}
-                      >
-                        {tx.type}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 text-[11px] text-slate-400 font-mono mt-0.5">
-                      <span>ID: {tx.transactionId}</span>
-                      <span>•</span>
-                      <span>{formatTimestamp(tx.timestamp)}</span>
-                    </div>
-                  </div>
-                </div>
 
-                {/* Right: Amount & Running Balance */}
-                <div className="text-right">
-                  <p className={`font-mono text-base font-bold ${style.color}`}>
-                    {style.sign}₹{tx.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                  </p>
-                  <p className="text-[11px] font-mono text-slate-400">
-                    Bal: ₹{tx.balanceAfterTransaction.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                  </p>
-                </div>
-              </motion.div>
-            );
-          })
-        )}
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={fetchHistory}
+            isLoading={isLoading}
+            icon={<RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />}
+          >
+            Refresh
+          </Button>
+        </div>
+
+        {/* Filter Tabs */}
+        <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-surface-subdued border border-border-subtle mb-5 overflow-x-auto">
+          {filterButtons.map((btn) => (
+            <button
+              key={btn.value}
+              type="button"
+              onClick={() => setFilter(btn.value)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer whitespace-nowrap select-none ${
+                filter === btn.value
+                  ? 'bg-surface text-primary shadow-2xs font-semibold'
+                  : 'text-secondary hover:text-primary'
+              }`}
+            >
+              {btn.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Error Alert */}
+        <AnimatePresence>
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="p-3 mb-4 rounded-xl bg-danger-subtle border border-danger/20 text-danger text-xs flex items-center gap-2"
+            >
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              <span>{error}</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Content Container */}
+        <div className="p-4 sm:p-5 rounded-3xl bg-surface-subdued border border-border-subtle shadow-xs">
+          {isLoading ? (
+            <div className="py-16 text-center space-y-3">
+              <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin mx-auto" />
+              <p className="text-xs text-tertiary font-mono">
+                Retrieving ledger records from Banking Core...
+              </p>
+            </div>
+          ) : filteredTransactions.length === 0 ? (
+            <div className="py-16 text-center space-y-2">
+              <div className="w-12 h-12 rounded-full bg-surface border border-border-subtle flex items-center justify-center mx-auto text-tertiary mb-3">
+                <History className="w-5 h-5" />
+              </div>
+              <p className="text-sm font-medium text-primary">No transactions found</p>
+              <p className="text-xs text-tertiary max-w-xs mx-auto">
+                {filter === 'ALL'
+                  ? 'There are currently no recorded operations for this account.'
+                  : `No ${filter.toLowerCase()} operations recorded for this account.`}
+              </p>
+            </div>
+          ) : (
+            <div className="divide-y divide-border-subtle">
+              {filteredTransactions.map((tx, idx) => (
+                <motion.div
+                  key={tx.transactionId}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.04 }}
+                >
+                  <TransactionItem tx={tx} showBalanceAfter={true} />
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Back Link */}
+        <div className="mt-8 text-center">
+          <button
+            type="button"
+            onClick={() => navigate('/dashboard')}
+            className="inline-flex items-center gap-1.5 text-xs text-secondary hover:text-primary transition-colors cursor-pointer select-none"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Return to Dashboard</span>
+          </button>
+        </div>
       </div>
-    </div>
+    </ATMTransition>
   );
 };

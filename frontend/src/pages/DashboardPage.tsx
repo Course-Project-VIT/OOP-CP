@@ -3,8 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { NumberTicker } from '../components/ui/NumberTicker';
 import { SpotlightCard } from '../components/cards/SpotlightCard';
+import { TransactionItem } from '../components/transactions/TransactionItem';
+import { ATMTransition } from '../components/layout/ATMTransition';
 import { api } from '../services/api';
-import type { TransactionItem } from '../types';
+import type { TransactionItem as TransactionItemType } from '../types';
 import { motion } from 'motion/react';
 import {
   ArrowDownLeft,
@@ -18,7 +20,7 @@ import {
 export const DashboardPage: React.FC = () => {
   const { session, account, refreshBalance } = useAuth();
   const navigate = useNavigate();
-  const [recentTransactions, setRecentTransactions] = useState<TransactionItem[]>([]);
+  const [recentTransactions, setRecentTransactions] = useState<TransactionItemType[]>([]);
 
   useEffect(() => {
     refreshBalance();
@@ -81,144 +83,95 @@ export const DashboardPage: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-8 py-2">
-      {/* Top Section: Balance & Account Identity (Typography & Spacing Driven) */}
-      <motion.div
-        initial={{ opacity: 0, y: -8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35 }}
-        className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-border-subtle"
-      >
-        <div>
-          <div className="text-xs font-medium text-secondary">
-            {session?.customerName || account?.fullName || 'Valued Client'}
-          </div>
-          <div className="text-xs text-tertiary mt-0.5 font-mono">
-            {account?.accountNumber} • {account?.accountType?.replace(' Account', '')}
-          </div>
-          <div className="mt-4">
-            <span className="text-xs text-tertiary block font-medium uppercase tracking-wider">
-              Available Balance
-            </span>
-            <div className="text-3xl sm:text-4xl font-semibold text-primary tracking-tight mt-0.5">
-              <NumberTicker value={account?.availableBalance ?? 0} />
+    <ATMTransition>
+      <div className="space-y-8 py-2">
+        {/* Top Section: Balance & Account Identity (Typography & Spacing Driven) */}
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35 }}
+          className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-border-subtle"
+        >
+          <div>
+            <div className="text-xs font-medium text-secondary">
+              {session?.customerName || account?.fullName || 'Valued Client'}
+            </div>
+            <div className="text-xs text-tertiary mt-0.5 font-mono">
+              {account?.accountNumber} • {account?.accountType?.replace(' Account', '')}
+            </div>
+            <div className="mt-4">
+              <span className="text-xs text-tertiary block font-medium uppercase tracking-wider">
+                Available Balance
+              </span>
+              <div className="text-3xl sm:text-4xl font-semibold text-primary tracking-tight mt-0.5">
+                <NumberTicker value={account?.availableBalance ?? 0} />
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Minimal Secondary Details Pill */}
-        <div className="flex items-center gap-4 text-xs font-mono text-tertiary">
-          <div>
-            <span className="block text-[10px] uppercase text-secondary">Card</span>
-            <span className="text-primary font-medium">{session?.maskedCardNumber || '•••• •••• ••••'}</span>
-          </div>
-          <div className="w-[1px] h-6 bg-border-subtle" />
-          <div>
-            <span className="block text-[10px] uppercase text-secondary">Min Required</span>
-            <span className="text-primary font-medium">₹{(account?.minimumBalance ?? 0).toFixed(2)}</span>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Main Actions Grid: 6 SpotlightCard Tiles */}
-      <div>
-        <div className="text-xs font-medium text-secondary uppercase tracking-wider mb-3">
-          ATM Operations
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {actionItems.map((item) => (
-            <SpotlightCard
-              key={item.title}
-              title={item.title}
-              desc={item.desc}
-              icon={item.icon}
-              spotlightColor={item.spotlightColor}
-              onClick={() => navigate(item.path)}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Recent Activity List: Clean Stripe / Linear Row Style */}
-      {recentTransactions.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.25 }}
-          className="pt-2"
-        >
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-medium text-secondary uppercase tracking-wider">
-              Recent Activity
-            </span>
-            <button
-              type="button"
-              onClick={() => navigate('/history')}
-              className="text-xs font-medium text-accent hover:underline cursor-pointer"
-            >
-              View Statement →
-            </button>
-          </div>
-
-          <div className="divide-y divide-border-subtle border-t border-b border-border-subtle">
-            {recentTransactions.map((tx) => {
-              const isPositive = tx.type === 'DEPOSIT' || tx.type === 'TRANSFER_IN';
-              const safeAmount = typeof tx.amount === 'number' ? tx.amount : 0;
-              const safeBalanceAfter =
-                typeof tx.balanceAfterTransaction === 'number' ? tx.balanceAfterTransaction : 0;
-
-              return (
-                <div
-                  key={tx.transactionId}
-                  className="py-3 flex items-center justify-between text-xs"
-                >
-                  <div className="flex items-center gap-3">
-                    <span
-                      className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-mono font-medium ${
-                        isPositive
-                          ? 'bg-success-subtle text-success'
-                          : 'bg-surface-subdued text-secondary'
-                      }`}
-                    >
-                      {isPositive ? '+' : '-'}
-                    </span>
-                    <div>
-                      <div className="font-medium text-primary">{tx.description}</div>
-                      <div className="text-[11px] text-tertiary">
-                        {tx.timestamp
-                          ? new Date(tx.timestamp).toLocaleTimeString([], {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })
-                          : 'Recent'}{' '}
-                        • Ref: {tx.transactionId}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="text-right">
-                    <div
-                      className={`font-mono font-medium text-sm ${
-                        isPositive ? 'text-success' : 'text-primary'
-                      }`}
-                    >
-                      {isPositive ? '+' : '-'}₹
-                      {safeAmount.toLocaleString('en-IN', {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}
-                    </div>
-                    <div className="text-[10px] text-tertiary font-mono">
-                      Bal: ₹{safeBalanceAfter.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+          {/* Minimal Secondary Details Pill */}
+          <div className="flex items-center gap-4 text-xs font-mono text-tertiary">
+            <div>
+              <span className="block text-[10px] uppercase text-secondary">Card</span>
+              <span className="text-primary font-medium">{session?.maskedCardNumber || '•••• •••• ••••'}</span>
+            </div>
+            <div className="w-[1px] h-6 bg-border-subtle" />
+            <div>
+              <span className="block text-[10px] uppercase text-secondary">Min Required</span>
+              <span className="text-primary font-medium">₹{(account?.minimumBalance ?? 0).toFixed(2)}</span>
+            </div>
           </div>
         </motion.div>
-      )}
-    </div>
+
+        {/* Main Actions Grid: 6 SpotlightCard Tiles */}
+        <div>
+          <div className="text-xs font-medium text-secondary uppercase tracking-wider mb-3">
+            ATM Operations
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {actionItems.map((item) => (
+              <SpotlightCard
+                key={item.title}
+                title={item.title}
+                desc={item.desc}
+                icon={item.icon}
+                spotlightColor={item.spotlightColor}
+                onClick={() => navigate(item.path)}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Recent Activity List: Clean Stripe / Linear Row Style */}
+        {recentTransactions.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.25 }}
+            className="pt-2"
+          >
+            <div className="flex items-center justify-between mb-3 px-1">
+              <span className="text-xs font-medium text-secondary uppercase tracking-wider">
+                Recent Activity
+              </span>
+              <button
+                type="button"
+                onClick={() => navigate('/history')}
+                className="text-xs font-medium text-accent hover:underline cursor-pointer"
+              >
+                View Statement →
+              </button>
+            </div>
+
+            <div className="divide-y divide-border-subtle border-t border-b border-border-subtle">
+              {recentTransactions.map((tx) => (
+                <TransactionItem key={tx.transactionId} tx={tx} />
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </div>
+    </ATMTransition>
   );
 };

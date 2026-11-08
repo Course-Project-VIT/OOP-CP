@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { NumberTicker } from '../components/ui/NumberTicker';
 import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
+import { ATMTransition } from '../components/layout/ATMTransition';
 import { motion } from 'motion/react';
 import {
   Printer,
@@ -33,7 +34,8 @@ export const BalancePage: React.FC = () => {
   const minimumBalance = balanceInfo?.minimumBalance ?? account?.minimumBalance ?? 0;
 
   return (
-    <div className="max-w-xl mx-auto py-2">
+    <ATMTransition>
+      <div className="max-w-xl mx-auto py-2">
       {/* Top Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
@@ -199,5 +201,6 @@ export const BalancePage: React.FC = () => {
         </div>
       </Modal>
     </div>
+    </ATMTransition>
   );
 };

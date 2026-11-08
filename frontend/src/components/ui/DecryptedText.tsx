@@ -46,3 +46,4 @@ export const DecryptedText: React.FC<DecryptedTextProps> = ({
 
   return <span className={className}>{displayText}</span>;
 };
+

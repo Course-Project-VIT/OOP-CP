@@ -29,3 +29,4 @@ export const transitions = {
     ease: 'easeInOut' as const,
   },
 };
+

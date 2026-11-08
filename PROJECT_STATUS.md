@@ -111,6 +111,41 @@
     - Backend JUnit 5 test suite: 21/21 tests passing (`mvnw.cmd test`).
     - Hot module reload active on `http://localhost:5173`.
 
+- [x] **Phase 9: Master Minimal Luxury Frontend Redesign & Full ATM Suite Upgrade**
+  - **3D Interactive Physics Card (`TiltedATMCard`)**:
+    - Perspective tilt tracking pointer movements with spring physics (`stiffness: 300, damping: 25`).
+    - Dynamic specular sheen highlight responding to cursor/touch position.
+    - Metallic micro-textured EMV chip, contactless waves, dual titanium/obsidian theme palettes.
+  - **Mechanical Card Insertion & Ejection Sequences**:
+    - Welcome screen: physical bezel slot, LED readiness indicator, spring-loaded card insertion sequence.
+    - Ejection screen: smooth card slide-out animation, clean farewell confirmation, automatic 6-second countdown.
+  - **Touchscreen Keypad & Pin Entry (`DecryptedText` & Lockscreen dots)**:
+    - 4 discrete spring-filling dots, tactile circular keypad (`whileTap={{ scale: 0.94 }}`), keyboard listener, and horizontal shake.
+    - Matrix-style cryptographic text decryption reveal for high-tech security feel.
+  - **Dashboard & Quick Actions (`SpotlightCard` & `NumberTicker`)**:
+    - Dynamic pointer-following radial spotlight with semantic fintech accents:
+      - Withdraw: Coral/Amber (`#FF5C5C`)
+      - Deposit: Emerald/Mint (`#10B981`)
+      - Transfer: Cobalt/Cyan (`#0EA5E9`)
+      - Balance Details: Platinum/Ice Blue (`#818CF8`)
+      - Activity Ledger: Muted Blue/Silver (`#64748B`)
+      - Security & PIN: Violet/Indigo (`#8B5CF6`)
+    - Smooth animated balance updates via `NumberTicker`.
+  - **Transaction Suite Overhaul**:
+    - `TransferPage`: Recipient validation, test account quick-pills, numeric keypad, fee-free transfer confirmation dialog, live balance deduction.
+    - `DepositPage`: Quick preset chips (₹500-₹5000), cash slot intake visualization, touch keypad, confirmation modal, live backend credit.
+    - `WithdrawPage`: Fast cash presets, minimum balance guard, cash dispenser animation, confirmation modal, live backend debit.
+    - `BalancePage`: Real-time breakdown, minimum balance enforcement notice, printable statement modal receipt.
+    - `HistoryPage`: Filter tabs (All, Deposits, Withdrawals, Transfers), `TransactionItem` staggered list, live fetch.
+    - `ChangePinPage`: 3-stage PIN entry (Current -> New -> Confirm), discrete dot indicators, tactile keypad, instant validation.
+    - `EjectPage`: Physical card slide-out animation, clean farewell banner, 6-second return timer.
+  - **Directional Screen Transitions (`ATMTransition`)**:
+    - Reusable spring-based directional route transitions across every screen.
+  - **Full Backend Protection & Verification**:
+    - Java OOP backend 100% preserved. 21/21 JUnit 5 tests passing (`mvnw.cmd test`).
+    - Frontend production build: 0 errors in 2.25s (`npm.cmd run build`).
+    - Both Light and Dark modes tested across all 10 screens.
+
 ---
 
 ## Commit History on `feature/atm-web-application`
