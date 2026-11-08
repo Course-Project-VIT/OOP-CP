@@ -59,19 +59,21 @@ This document records all UI component patterns, animation resources, and design
 
 ---
 
-## 4. React Bits Inspired Visual Effects
+## 4. React Bits Components
 
 - **Resource Name**: React Bits
 - **Source URL**: [https://reactbits.dev/](https://reactbits.dev/)
 - **Components Used**:
-  - **Ambient Aurora Mesh Background**:
-    - *Source Pattern*: Background Aurora / Mesh Gradient Beams.
-    - *Implementation*: `frontend/src/components/layout/AnimatedBackground.tsx`.
-    - *Purpose*: Non-distracting, dark midnight-navy flowing gradient orbs behind the ATM kiosk frame.
-  - **Tactile ATM Keypad Feedback**:
-    - *Source Pattern*: Interactive micro-interactions for touch devices.
-    - *Implementation*: `frontend/src/components/ui/Keypad.tsx`.
-- **Dependencies**: `motion`, `tailwindcss`
+  - **TiltedCard**:
+    - *Implementation*: `frontend/src/components/cards/TiltedATMCard.tsx`.
+    - *Purpose*: Realistic 3D debit card with pointer-tracking tilt, specular gradient sheen (`--mouse-x`, `--mouse-y`), EMV chip, and contactless wave. Includes realistic mechanical slot insertion animation into reader slot.
+  - **SpotlightCard**:
+    - *Implementation*: `frontend/src/components/cards/SpotlightCard.tsx`.
+    - *Purpose*: Pointer-following radial spotlight for the 6 ATM dashboard operations with dynamic coordinates and semantic fintech colors (Coral/Amber for Withdraw, Emerald/Mint for Deposit, Cobalt/Cyan for Transfer, Platinum for Balance, Silver for Activity, Violet for PIN).
+  - **DecryptedText**:
+    - *Implementation*: `frontend/src/components/ui/DecryptedText.tsx`.
+    - *Purpose*: Sleek cryptographic character-by-character reveal for cardholder names and masked card identifiers upon authentication.
+- **Dependencies**: `motion`, `lucide-react`, `tailwindcss`
 - **License**: MIT License
 
 ---

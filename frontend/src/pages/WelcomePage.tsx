@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { DEMO_CARDS } from '../utils/demoCards';
-import { CardGraphic } from '../components/atm/CardGraphic';
+import { TiltedATMCard } from '../components/cards/TiltedATMCard';
 import { Button } from '../components/ui/Button';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowRight, AlertCircle, CreditCard } from 'lucide-react';
+import { ArrowRight, AlertCircle, CreditCard, Sparkles } from 'lucide-react';
 
 export const WelcomePage: React.FC = () => {
   const [selectedCardId, setSelectedCardId] = useState<string>('CARD1001');
@@ -14,7 +14,7 @@ export const WelcomePage: React.FC = () => {
   const { checkCard, isLoading, error, clearError } = useAuth();
   const navigate = useNavigate();
 
-  // Find the selected demo card metadata (names, status)
+  // Selected demo profile metadata
   const currentDemo = DEMO_CARDS.find((c) => c.cardNumber === selectedCardId) || {
     cardNumber: manualCardNumber || 'CARD1001',
     holder: 'VALUED CARDHOLDER',
@@ -24,25 +24,28 @@ export const WelcomePage: React.FC = () => {
   };
 
   const handleSelectDemo = (cardNum: string) => {
+    if (isInserting || isLoading) return;
     clearError();
     setSelectedCardId(cardNum);
     setManualCardNumber(cardNum);
   };
 
   const handleInsert = async (cardNumToInsert: string) => {
+    if (isInserting || isLoading) return;
     clearError();
     const cleanNum = cardNumToInsert.trim().toUpperCase();
     if (!cleanNum) return;
 
     setIsInserting(true);
-    // Smooth insertion delay for natural tactile feel
+
+    // Mechanical insertion sequence timing: 650ms smooth intake animation
     setTimeout(async () => {
       const success = await checkCard(cleanNum);
       setIsInserting(false);
       if (success) {
         navigate('/pin');
       }
-    }, 400);
+    }, 650);
   };
 
   return (
@@ -54,6 +57,10 @@ export const WelcomePage: React.FC = () => {
         transition={{ duration: 0.4 }}
         className="text-center mb-6 sm:mb-8"
       >
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent-subtle text-accent text-xs font-medium mb-2.5">
+          <Sparkles className="w-3.5 h-3.5" />
+          <span>APEX Touch Banking System</span>
+        </div>
         <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-primary">
           Welcome to Apex
         </h1>
@@ -62,7 +69,7 @@ export const WelcomePage: React.FC = () => {
         </p>
       </motion.div>
 
-      {/* Error Alert */}
+      {/* Error Alert Box */}
       <AnimatePresence>
         {error && (
           <motion.div
@@ -70,7 +77,7 @@ export const WelcomePage: React.FC = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.98 }}
             transition={{ duration: 0.2 }}
-            className="w-full max-w-sm mb-6 p-3 rounded-xl bg-danger-subtle border border-danger/20 text-danger text-xs flex items-start gap-2.5"
+            className="w-full max-w-sm mb-6 p-3.5 rounded-2xl bg-danger-subtle border border-danger/25 text-danger text-xs flex items-start gap-2.5 shadow-sm"
           >
             <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
             <div>
@@ -81,36 +88,36 @@ export const WelcomePage: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* Primary Card Presentation & Slot Simulation */}
+      {/* Physical-Style Card Slot with Mechanical LED & Tilted Card */}
       <div className="flex flex-col items-center mb-8 relative">
-        {/* Subtle Insertion Slot */}
-        <div className="w-64 sm:w-72 h-2.5 bg-surface-subdued rounded-full border border-border-subtle mb-4 flex items-center justify-center shadow-inner">
-          <div className="w-48 h-1 bg-border-strong rounded-full opacity-60" />
+        {/* Card Reader Slot Bezel */}
+        <div className="w-72 sm:w-80 h-3 bg-surface-subdued rounded-full border border-border-subtle mb-5 flex items-center justify-between px-3 shadow-inner relative">
+          <div className="w-56 h-1 bg-border-strong rounded-full opacity-60 mx-auto" />
+          {/* Status LED Indicator */}
+          <div
+            className={`w-1.5 h-1.5 rounded-full transition-colors duration-300 ${
+              isInserting
+                ? 'bg-amber-400 animate-pulse shadow-[0_0_8px_rgba(251,191,36,0.8)]'
+                : 'bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.7)]'
+            }`}
+            title={isInserting ? 'Reading Card...' : 'Slot Ready'}
+          />
         </div>
 
-        {/* 3D Apple-Style Minimalist Debit Card */}
-        <motion.div
-          animate={
-            isInserting
-              ? { y: -30, opacity: 0.4, scale: 0.92 }
-              : { y: 0, opacity: 1, scale: 1 }
-          }
-          transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-        >
-          <CardGraphic
-            cardNumber={currentDemo.cardNumber}
-            cardHolderName={currentDemo.holder}
-            expiryDate={currentDemo.expiry}
-            accountType={currentDemo.accountType}
-            isBlocked={currentDemo.status === 'blocked'}
-            isExpired={currentDemo.status === 'expired'}
-            interactive={true}
-            onClick={() => handleInsert(currentDemo.cardNumber)}
-          />
-        </motion.div>
+        {/* 3D Interactive Tilted Debit Card */}
+        <TiltedATMCard
+          cardNumber={currentDemo.cardNumber}
+          cardHolderName={currentDemo.holder}
+          expiryDate={currentDemo.expiry}
+          accountType={currentDemo.accountType}
+          isBlocked={currentDemo.status === 'blocked'}
+          isExpired={currentDemo.status === 'expired'}
+          isInserting={isInserting}
+          onClick={() => handleInsert(currentDemo.cardNumber)}
+        />
       </div>
 
-      {/* Minimal Card Number Input & Insert Action */}
+      {/* Minimal Card Number Input & Insertion Action */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -122,6 +129,7 @@ export const WelcomePage: React.FC = () => {
             <input
               type="text"
               value={manualCardNumber}
+              disabled={isInserting || isLoading}
               onChange={(e) => {
                 const val = e.target.value.toUpperCase();
                 setManualCardNumber(val);
@@ -144,15 +152,15 @@ export const WelcomePage: React.FC = () => {
             onClick={() => handleInsert(manualCardNumber)}
             icon={<ArrowRight className="w-4 h-4" />}
           >
-            Insert
+            Insert Card
           </Button>
         </div>
       </motion.div>
 
-      {/* Compact Demo Profile Selector (Strictly NO PINs or balances displayed) */}
-      <div className="w-full max-w-md pt-4 border-t border-border-subtle">
+      {/* Compact Demo Profile Selector (Zero exposure of PINs or Balances) */}
+      <div className="w-full max-w-md pt-5 border-t border-border-subtle">
         <div className="text-[11px] font-medium text-tertiary uppercase tracking-wider text-center mb-3">
-          Select Demo Profile to Test
+          Select Classroom Demo Profile to Test
         </div>
 
         <div className="grid grid-cols-2 gap-2">
@@ -162,9 +170,10 @@ export const WelcomePage: React.FC = () => {
               <motion.button
                 key={card.cardNumber}
                 type="button"
+                disabled={isInserting || isLoading}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => handleSelectDemo(card.cardNumber)}
-                className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
                   isSelected
                     ? 'bg-surface border-accent shadow-sm'
                     : 'bg-surface-subdued hover:bg-surface-hover border-border-subtle'
@@ -177,16 +186,16 @@ export const WelcomePage: React.FC = () => {
                   <span
                     className={`text-[9px] px-1.5 py-0.2 rounded-full uppercase font-medium ${
                       card.status === 'blocked'
-                        ? 'bg-danger-subtle text-danger'
+                        ? 'bg-danger-subtle text-danger border border-danger/20'
                         : card.status === 'expired'
-                        ? 'bg-warning-subtle text-warning'
-                        : 'bg-success-subtle text-success'
+                        ? 'bg-warning-subtle text-warning border border-warning/20'
+                        : 'bg-success-subtle text-success border border-success/20'
                     }`}
                   >
                     {card.status}
                   </span>
                 </div>
-                <div className="text-[11px] text-secondary truncate mt-0.5">
+                <div className="text-[11px] text-secondary truncate mt-1">
                   {card.holder}
                 </div>
                 <div className="text-[10px] text-tertiary">

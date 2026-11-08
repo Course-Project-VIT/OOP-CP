@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { NumberTicker } from '../components/ui/NumberTicker';
+import { SpotlightCard } from '../components/cards/SpotlightCard';
 import { api } from '../services/api';
 import type { TransactionItem } from '../types';
 import { motion } from 'motion/react';
@@ -12,7 +13,6 @@ import {
   Receipt,
   KeyRound,
   Eye,
-  ArrowRight,
 } from 'lucide-react';
 
 export const DashboardPage: React.FC = () => {
@@ -41,36 +41,42 @@ export const DashboardPage: React.FC = () => {
       desc: 'Fast cash or custom amount',
       icon: <ArrowUpRight className="w-5 h-5" />,
       path: '/withdraw',
+      spotlightColor: '#FF5C5C', // Coral/Amber accent
     },
     {
       title: 'Deposit',
       desc: 'Instant currency deposit',
       icon: <ArrowDownLeft className="w-5 h-5" />,
       path: '/deposit',
+      spotlightColor: '#10B981', // Emerald/Mint accent
     },
     {
       title: 'Transfer',
       desc: 'Account-to-account funds',
       icon: <ArrowLeftRight className="w-5 h-5" />,
       path: '/transfer',
+      spotlightColor: '#0EA5E9', // Cobalt/Cyan accent
     },
     {
       title: 'Balance Details',
       desc: 'Account limits & statements',
       icon: <Eye className="w-5 h-5" />,
       path: '/balance',
+      spotlightColor: '#818CF8', // Ice Blue / Platinum accent
     },
     {
       title: 'Activity Ledger',
       desc: 'Full transaction statement',
       icon: <Receipt className="w-5 h-5" />,
       path: '/history',
+      spotlightColor: '#64748B', // Muted Blue / Silver accent
     },
     {
       title: 'Security & PIN',
       desc: 'Change your card PIN',
       icon: <KeyRound className="w-5 h-5" />,
       path: '/change-pin',
+      spotlightColor: '#8B5CF6', // Violet/Indigo accent
     },
   ];
 
@@ -114,37 +120,22 @@ export const DashboardPage: React.FC = () => {
         </div>
       </motion.div>
 
-      {/* Main Actions Grid: Minimalist Tiles */}
+      {/* Main Actions Grid: 6 SpotlightCard Tiles */}
       <div>
         <div className="text-xs font-medium text-secondary uppercase tracking-wider mb-3">
           ATM Operations
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {actionItems.map((item, index) => (
-            <motion.button
+          {actionItems.map((item) => (
+            <SpotlightCard
               key={item.title}
-              type="button"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.04, duration: 0.3 }}
-              whileTap={{ scale: 0.98 }}
+              title={item.title}
+              desc={item.desc}
+              icon={item.icon}
+              spotlightColor={item.spotlightColor}
               onClick={() => navigate(item.path)}
-              className="p-4 rounded-2xl bg-surface-subdued hover:bg-surface-hover border border-border-subtle text-left transition-all cursor-pointer flex items-center gap-3.5 group select-none shadow-sm"
-            >
-              <div className="w-10 h-10 rounded-xl bg-surface border border-border-subtle flex items-center justify-center text-primary group-hover:text-accent transition-colors shadow-xs">
-                {item.icon}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="font-medium text-sm text-primary group-hover:text-accent transition-colors flex items-center justify-between">
-                  <span>{item.title}</span>
-                  <ArrowRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition-all text-secondary" />
-                </div>
-                <div className="text-xs text-secondary truncate mt-0.5">
-                  {item.desc}
-                </div>
-              </div>
-            </motion.button>
+            />
           ))}
         </div>
       </div>
@@ -174,7 +165,8 @@ export const DashboardPage: React.FC = () => {
             {recentTransactions.map((tx) => {
               const isPositive = tx.type === 'DEPOSIT' || tx.type === 'TRANSFER_IN';
               const safeAmount = typeof tx.amount === 'number' ? tx.amount : 0;
-              const safeBalanceAfter = typeof tx.balanceAfterTransaction === 'number' ? tx.balanceAfterTransaction : 0;
+              const safeBalanceAfter =
+                typeof tx.balanceAfterTransaction === 'number' ? tx.balanceAfterTransaction : 0;
 
               return (
                 <div
