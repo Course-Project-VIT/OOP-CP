@@ -29,3 +29,4 @@ export const ATMTransition: React.FC<ATMTransitionProps> = ({
     </motion.div>
   );
 };
+
